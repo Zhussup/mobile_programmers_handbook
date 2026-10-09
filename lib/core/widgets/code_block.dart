@@ -180,10 +180,18 @@ class _CodeBlockState extends State<CodeBlock> {
               ),
             ],
           ),
-          Divider(height: 1, thickness: 1, color: scheme.surfaceContainerLowest),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: scheme.surfaceContainerLowest,
+          ),
           // --- Код с подсветкой ---
           codeArea,
-          Divider(height: 1, thickness: 1, color: scheme.surfaceContainerLowest),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: scheme.surfaceContainerLowest,
+          ),
           // --- Вывод (раскрывающийся) ---
           ?outputSection,
           // --- Подпись под кодом ---

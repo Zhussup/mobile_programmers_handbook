@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 
 import 'package:mob_kurs/core/constants/app_constants.dart';
 import 'package:mob_kurs/features/reference/article_repository.dart';
 import 'package:mob_kurs/features/reference/screens/article_screen.dart';
+import 'package:mob_kurs/features/reference/history_provider.dart';
 import 'package:mob_kurs/features/reference/screens/history_screen.dart';
 
 import 'fixtures.dart';
@@ -125,7 +127,12 @@ void main() {
       await openClearDialog(tester);
       expect(find.text('Очистить историю?'), findsOneWidget);
 
-      await harness.tapAndWaitReal(tester, const Key('history-clear-confirm'));
+      // Подтверждение: pop-анимация диалога доигрывается в fake-времени
+      // (pumpAndSettle), затем clear() стартует — его БД-операция требует
+      // реального времени (см. подводный камень №3).
+      await tester.tap(find.byKey(const Key('history-clear-confirm')));
+      await tester.pumpAndSettle();
+      await harness.settleRealIo(tester);
       await tester.pump(const Duration(milliseconds: 400));
 
       expect(find.byKey(const Key('history-empty')), findsOneWidget);
@@ -189,10 +196,12 @@ void main() {
     await harness.settleRealIo(tester);
 
     expect(find.byType(ArticleScreen), findsOneWidget);
-    // История не дублируется: одна строка на статью.
-    expect(
-      find.byKey(const Key('history-entry-fx_syn_var')).evaluate().length,
-      findsOneWidget,
-    );
+    // Повторный просмотр не дублирует запись article-провайдера: та же
+    // статья — одна строка в топе.
+    final context = tester.element(find.byType(ArticleScreen));
+    final history = Provider.of<HistoryProvider>(context, listen: false);
+    expect(history.entries.map((entry) => entry.article.id).toList(), [
+      'fx_syn_var',
+    ]);
   });
 }

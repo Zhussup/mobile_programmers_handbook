@@ -68,92 +68,105 @@ void main() {
       expect(byEmail.id, user.id);
     });
 
-    test('пароль хранится только как хэш + соль (не в открытом виде)', () async {
-      await repository.register(
-        username: 'user1',
-        email: 'user1@example.com',
-        password: 'секретныйПароль',
-      );
-      final rows = await db.query('users');
-      final row = rows.single;
-      expect(row['password_hash'] as String, isNot(contains('секретныйПароль')));
-      expect(row['password_hash'] as String, hasLength(64));
-      expect((row['salt'] as String).length, 32);
-    });
+    test(
+      'пароль хранится только как хэш + соль (не в открытом виде)',
+      () async {
+        await repository.register(
+          username: 'user1',
+          email: 'user1@example.com',
+          password: 'секретныйПароль',
+        );
+        final rows = await db.query('users');
+        final row = rows.single;
+        expect(
+          row['password_hash'] as String,
+          isNot(contains('секретныйПароль')),
+        );
+        expect(row['password_hash'] as String, hasLength(64));
+        expect((row['salt'] as String).length, 32);
+      },
+    );
 
-    test('соль: у двух пользователей одинаковый пароль — разные хэши',
-        () async {
-      await repository.register(
-        username: 'user1',
-        email: 'user1@example.com',
-        password: 'общийПароль',
-      );
-      await repository.register(
-        username: 'user2',
-        email: 'user2@example.com',
-        password: 'общийПароль',
-      );
-      final rows = await db.query('users');
-      expect((rows[0]['password_hash'] as String),
-          isNot(rows[1]['password_hash']));
-    });
+    test(
+      'соль: у двух пользователей одинаковый пароль — разные хэши',
+      () async {
+        await repository.register(
+          username: 'user1',
+          email: 'user1@example.com',
+          password: 'общийПароль',
+        );
+        await repository.register(
+          username: 'user2',
+          email: 'user2@example.com',
+          password: 'общийПароль',
+        );
+        final rows = await db.query('users');
+        expect(
+          (rows[0]['password_hash'] as String),
+          isNot(rows[1]['password_hash']),
+        );
+      },
+    );
   });
 
   group('login: ошибки', () {
-    test('неверный пароль → AuthException «Неверный логин или пароль»',
-        () async {
-      await repository.register(
-        username: 'user1',
-        email: 'user1@example.com',
-        password: 'пароль123',
-      );
-      expect(
-        () => repository.login(
-          loginOrEmail: 'user1',
-          password: 'другойпароль',
-        ),
-        throwsA(
-          isA<AuthException>().having(
-            (e) => e.message,
-            'message',
-            'Неверный логин или пароль',
+    test(
+      'неверный пароль → AuthException «Неверный логин или пароль»',
+      () async {
+        await repository.register(
+          username: 'user1',
+          email: 'user1@example.com',
+          password: 'пароль123',
+        );
+        expect(
+          () =>
+              repository.login(loginOrEmail: 'user1', password: 'другойпароль'),
+          throwsA(
+            isA<AuthException>().having(
+              (e) => e.message,
+              'message',
+              'Неверный логин или пароль',
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
 
     test('несуществующий пользователь → AuthException', () async {
       expect(
-        () => repository.login(
-          loginOrEmail: 'нетакого',
-          password: 'пароль123',
-        ),
+        () => repository.login(loginOrEmail: 'нетакого', password: 'пароль123'),
         throwsA(isA<AuthException>()),
       );
     });
   });
 
   group('register: дубликаты (без учёта регистра)', () {
-    test('дубликат username в другом регистре → ошибка поля username',
-        () async {
-      await repository.register(
-        username: 'Иван',
-        email: 'ivan@example.com',
-        password: 'пароль123',
-      );
-      expect(
-        () => repository.register(
-          username: 'иван',
-          email: 'другой@example.com',
-          password: 'пароль456',
-        ),
-        throwsA(
-          isA<AuthException>()
-              .having((e) => e.field, 'field', AuthField.username)
-              .having((e) => e.message, 'message', 'Имя пользователя уже занято'),
-        ),
-      );
-    });
+    test(
+      'дубликат username в другом регистре → ошибка поля username',
+      () async {
+        await repository.register(
+          username: 'Иван',
+          email: 'ivan@example.com',
+          password: 'пароль123',
+        );
+        expect(
+          () => repository.register(
+            username: 'иван',
+            email: 'другой@example.com',
+            password: 'пароль456',
+          ),
+          throwsA(
+            isA<AuthException>()
+                .having((e) => e.field, 'field', AuthField.username)
+                .having(
+                  (e) => e.message,
+                  'message',
+                  'Имя пользователя уже занято',
+                ),
+          ),
+        );
+      },
+    );
 
     test('дубликат email в другом регистре → ошибка поля email', () async {
       await repository.register(
@@ -175,23 +188,28 @@ void main() {
       );
     });
 
-    test('UNIQUE-ограничение схемы как страховка (прямой INSERT дубля)',
-        () async {
-      await repository.register(
-        username: 'user1',
-        email: 'user1@example.com',
-        password: 'пароль123',
-      );
-      // Вставка мимо _assertUnique: проверяет работу самой схемы (NOCASE).
-      expect(() => db.insert('users', {
+    test(
+      'UNIQUE-ограничение схемы как страховка (прямой INSERT дубля)',
+      () async {
+        await repository.register(
+          username: 'user1',
+          email: 'user1@example.com',
+          password: 'пароль123',
+        );
+        // Вставка мимо _assertUnique: проверяет работу самой схемы (NOCASE).
+        expect(
+          () => db.insert('users', {
             'username': 'USER1',
             'email': 'user2@example.com',
             'password_hash': 'hash',
             'salt': 'salt',
             'avatar_color': '#2AA79B',
             'created_at': '2026-01-01T00:00:00.000',
-          }), throwsA(isA<DatabaseException>()));
-    });
+          }),
+          throwsA(isA<DatabaseException>()),
+        );
+      },
+    );
   });
 
   group('logout + сессия', () {

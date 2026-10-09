@@ -20,8 +20,10 @@ extension DifficultyX on Difficulty {
 /// Defensive: пустое/неизвестное значение → [Difficulty.beginner] (не падаем).
 Difficulty difficultyFromRaw(Object? raw) {
   if (raw is String) {
-    return Difficulty.values
-        .firstWhere((d) => d.name == raw, orElse: () => Difficulty.beginner);
+    return Difficulty.values.firstWhere(
+      (d) => d.name == raw,
+      orElse: () => Difficulty.beginner,
+    );
   }
   return Difficulty.beginner;
 }
@@ -224,9 +226,12 @@ ArticleBlock? tryParseBlock(Object? raw) {
     case 'list':
       final items = raw['items'];
       if (items is! List) return null;
-      return ArticleListBlock(List.unmodifiable(
-        [for (final item in items) if (item is String) item],
-      ));
+      return ArticleListBlock(
+        List.unmodifiable([
+          for (final item in items)
+            if (item is String) item,
+        ]),
+      );
     case 'code':
       // Кода без исходника не бывает — такой блок отбрасывается.
       final code = _stringField(raw, 'code');

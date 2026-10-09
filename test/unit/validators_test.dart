@@ -35,7 +35,7 @@ void main() {
       expect(Validators.validateEmail(''), 'Введите email');
     });
 
-    test('кривые email' , () {
+    test('кривые email', () {
       expect(Validators.validateEmail('нет-собаки'), isNotNull);
       expect(Validators.validateEmail('две@собаки@ру'), isNotNull);
       expect(Validators.validateEmail('без@домена'), isNotNull);

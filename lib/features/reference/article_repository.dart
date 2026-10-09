@@ -114,7 +114,9 @@ class ArticleRepository {
     for (final rawArticle in rawArticles) {
       final article = Article.tryParse(rawArticle);
       if (article == null) {
-        debugPrint('Справочник: статья пропущена (некорректная) в ${category.id}');
+        debugPrint(
+          'Справочник: статья пропущена (некорректная) в ${category.id}',
+        );
         continue;
       }
       // id статей уникальны во всём справочнике — дубликат отбрасываем.
