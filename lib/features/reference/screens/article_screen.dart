@@ -105,6 +105,10 @@ class _ArticleScreenState extends State<ArticleScreen> {
     // --- Статья найдена: заголовок, описание, сердечко, блоки ---
     final scheme = Theme.of(context).colorScheme;
     final isFavorite = favorites.isFavorite(article.id);
+    // Первый code-блок статьи (кнопка с ним носит канонический ключ).
+    final firstCodeIndex = article.blocks.indexWhere(
+      (block) => block is ArticleCodeBlock,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -159,7 +163,7 @@ class _ArticleScreenState extends State<ArticleScreen> {
                 const SizedBox(height: 8),
                 _OpenInPlaygroundButton(
                   block: article.blocks[i] as ArticleCodeBlock,
-                  isFirstCodeBlock: i == 0,
+                  isFirstCodeBlock: i == firstCodeIndex,
                 ),
                 const SizedBox(height: 4),
               ],

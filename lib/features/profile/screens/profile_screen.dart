@@ -180,9 +180,21 @@ class ProfileScreen extends StatelessWidget {
 
             const SizedBox(height: 12),
 
+            // --- Редактировать (P11) — push приватного маршрута /profile/edit ---
+            OutlinedButton.icon(
+              key: const Key('profile-edit-open'),
+              onPressed: user == null
+                  ? null
+                  : () => context.push(AppConstants.routeProfileEdit),
+              icon: const Icon(Icons.edit_outlined),
+              label: const Text('Редактировать'),
+            ),
+
+            const SizedBox(height: 12),
+
             // --- Статистика: Прочитано / В избранном / Сниппеты ---
             Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _statCard(
                   context: context,
@@ -266,18 +278,6 @@ class ProfileScreen extends StatelessWidget {
                   ],
                 ),
               ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // --- Редактировать профиль (P11) — push приватного маршрута ---
-            OutlinedButton.icon(
-              key: const Key('profile-edit-open'),
-              onPressed: user == null
-                  ? null
-                  : () => context.push(AppConstants.routeProfileEdit),
-              icon: const Icon(Icons.edit_outlined),
-              label: const Text('Редактировать'),
             ),
 
             const SizedBox(height: 12),

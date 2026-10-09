@@ -91,18 +91,13 @@ class _PlaygroundScreenState extends State<PlaygroundScreen> {
     );
   }
 
-  /// Тело: спиннер первой загрузки → EmptyState → карточки сниппетов.
+  /// Тело: EmptyState (в т.ч. во время первой загрузки — канон P9: список
+  /// рендерится сразу, данные долетают без спиннера) → карточки сниппетов.
   Widget _buildList(
     BuildContext context,
     SnippetProvider provider,
     ColorScheme scheme,
   ) {
-    if (provider.loading && provider.entries.isEmpty) {
-      return const Center(
-        key: Key('playground-loading'),
-        child: CircularProgressIndicator(),
-      );
-    }
     if (provider.entries.isEmpty) {
       return const Center(
         child: EmptyState(
