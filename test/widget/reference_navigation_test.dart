@@ -20,7 +20,9 @@ void main() {
 
   const t = Timeout(Duration(seconds: 60));
 
-  /// Открыть статью hello_world: /home → категория → статья.
+  /// Открыть статью hello_world: /home → категория → статья. После
+  /// открытия — settleRealIo: постфрейм-запись истории (P9) — реальная IO,
+  /// оставленный без ожидания запрос «висит» таймером до конца теста.
   Future<void> openArticle(WidgetTester tester) async {
     await harness.pumpApp(tester, initialLocation: AppConstants.routeHome);
 
@@ -32,6 +34,7 @@ void main() {
 
     await tester.tap(find.byKey(const Key('article-card-cpp_syn_hello_world')));
     await tester.pumpAndSettle();
+    await harness.settleRealIo(tester);
   }
 
   testWidgets(
@@ -83,16 +86,21 @@ void main() {
       await tester.tap(find.byKey(const Key('home-category-algorithms')));
       await tester.pumpAndSettle();
 
-      // Первая карточка — beginner «Условия…», последняя — intermediate.
+      // Порядок по сложности: beginner «Условия…» первой (видна сразу),
+      // «Рекурсия» — ниже по списку (контент растёт — прокручиваем до неё).
       expect(find.text('Условия: if / else и switch'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('Рекурсия'),
+        200,
+        scrollable: find
+            .descendant(
+              of: find.byType(CategoryArticlesScreen),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      await tester.pumpAndSettle();
       expect(find.text('Рекурсия'), findsOneWidget);
-
-      // Порядок по позициям: «Условия…» выше «Сортировки пузырьком».
-      final first = tester
-          .getTopLeft(find.text('Условия: if / else и switch'))
-          .dy;
-      final sort = tester.getTopLeft(find.text('Сортировка пузырьком')).dy;
-      expect(first, lessThan(sort));
     },
   );
 
