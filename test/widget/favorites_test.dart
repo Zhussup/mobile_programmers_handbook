@@ -41,8 +41,14 @@ void main() {
     await harness.settleRealIo(tester);
   }
 
-  /// Дренаж снекбаров (подводный камень №6: два pump — 5s таймер + анимация).
+  /// Дренаж снекбара (подводный камень №6): снекбар показан ВНУТРИ
+  /// runAsync-окна — его 4-секундный таймер назначен в реальной зоне,
+  /// поэтому сначала выжидаем реальное время (иначе таймер стреляет уже
+  /// после teardown), затем доигрываем fake-время анимаций.
   Future<void> drainSnackBar(WidgetTester tester) async {
+    await tester.runAsync(() async {
+      await Future<void>.delayed(const Duration(seconds: 5));
+    });
     await tester.pump(const Duration(seconds: 5));
     await tester.pump(const Duration(seconds: 1));
   }
@@ -163,6 +169,7 @@ void main() {
       await drainSnackBar(tester);
 
       await harness.tapAndWaitReal(tester, const Key('article-favorite'));
+      await tester.pump(const Duration(milliseconds: 400));
       expect(find.text('Удалено из избранного'), findsOneWidget);
       expect(find.byIcon(Icons.favorite_border), findsOneWidget);
       await drainSnackBar(tester);

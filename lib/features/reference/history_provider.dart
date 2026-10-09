@@ -97,7 +97,12 @@ class HistoryProvider extends UserScopedProvider {
       await repository.record(userId, articleId);
       if (!isActual(token)) return;
       _applyLocalRecord(articleId);
-    } on Exception catch (e) {
+      // «Продолжить»/история перерисовываются по факту записи (вызов после
+      // await — не во время build).
+      notifyListeners();
+    } catch (e) {
+      // Ловим любые ошибки (в т.ч. StateError закрытой БД из отложенной
+      // операции): история не критична для чтения статьи — только лог.
       debugPrint('История: запись не удалась ($e)');
     }
   }
@@ -124,9 +129,13 @@ class HistoryProvider extends UserScopedProvider {
       await repository.clear(userId);
       if (!isActual(token)) return;
       _entries = const [];
-    } on Exception catch (e) {
+      notifyListeners();
+    } catch (e, stackTrace) {
+      // Очистка — восстановимая операция: UI покажет результат по факту
+      // (список/снекбар). Rethrow НЕ делаем: сбой БД не должен ронять
+      // приложение, а экран узнаёт об ошибке по «залипшему» списку.
       debugPrint('История: очистка не удалась ($e)');
-      rethrow;
+      debugPrint('$stackTrace');
     }
   }
 }

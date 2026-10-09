@@ -2,6 +2,7 @@ import 'dart:io' show File;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -84,6 +85,16 @@ class AppHarness {
         database: db,
       ),
     );
+  }
+
+  /// Программный переход по роутеру приложения (внутри теста).
+  ///
+  /// [initialLocation] учитывается только на первом pump: повторный
+  /// pumpWidget переиспользует State и созданный ранее роутер, поэтому
+  /// последующие переходы делаются напрямую через роутер.
+  void goRoute(WidgetTester tester, String location) {
+    final context = tester.element(find.byType(Navigator).first);
+    GoRouter.of(context).go(location);
   }
 
   /// Синхронное чтение файлов контента с диска + разбор (fromRaw).
