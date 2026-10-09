@@ -1,8 +1,23 @@
 import 'package:flutter/material.dart';
 
-/// Единый SnackBar приложения (скопировано / ошибка / прочий фидбек).
-///
-/// [isError] — красный вариант для ошибок (логин, регистрация).
+/// Названия сообщений снекбаров (единые формулировки — подводный камень №6
+/// из плана: фидбек всегда наблюдаем).
+class AppSnackBarMessages {
+  AppSnackBarMessages._();
+
+  /// После копирования кода.
+  static const String copied = 'Скопировано';
+
+  /// После сохранения (сниппет, настройки и т.п. — P10/P11).
+  static const String saved = 'Сохранено';
+
+  /// После удаления (сниппет — P10).
+  static const String deleted = 'Удалено';
+}
+
+/// Единый SnackBar приложения: базовая версия (message + isError) и
+/// предметные хелперы [showCopiedSnackBar] / [showSavedSnackBar] /
+/// [showErrorSnackBar].
 void showAppSnackBar(
   BuildContext context,
   String message, {
@@ -18,3 +33,15 @@ void showAppSnackBar(
       ),
     );
 }
+
+/// Снекбар «Скопировано» (копирование кода — всегда наблюдаемо).
+void showCopiedSnackBar(BuildContext context) =>
+    showAppSnackBar(context, AppSnackBarMessages.copied);
+
+/// Снекбар «Сохранено» (формы/сниппеты — P10, профиль — P11).
+void showSavedSnackBar(BuildContext context) =>
+    showAppSnackBar(context, AppSnackBarMessages.saved);
+
+/// Красный снекбар с сообщением об ошибке.
+void showErrorSnackBar(BuildContext context, String message) =>
+    showAppSnackBar(context, message, isError: true);

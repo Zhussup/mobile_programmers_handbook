@@ -28,7 +28,7 @@ String? authRedirect(String location, AuthState auth) {
 
   if (auth.isAuthorized) {
     // Вошедшего не пускаем на логин/регистрацию (иначе петля). Сплэш не
-    // блокируем: он гарантрованно отыгрывает таймер, затем сам ведёт на
+    // блокируем: он гарантированно отыгрывает таймер, затем сам ведёт на
     // /home (см. SplashScreen._goNext).
     const authScreens = {AppConstants.routeLogin, AppConstants.routeRegister};
     return authScreens.contains(location) ? AppConstants.routeHome : null;

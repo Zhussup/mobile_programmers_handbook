@@ -98,7 +98,7 @@ class SessionProvider extends ChangeNotifier {
         await repository.logout();
       }
     } on Exception {
-      // БД недоступна (вproduction маловероятно): трактуем как гостя.
+      // БД недоступна (маловероятно в бою): трактуем как гостя.
       _user = null;
     }
     _initialized = true;

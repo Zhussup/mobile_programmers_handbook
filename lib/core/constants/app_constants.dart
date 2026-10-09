@@ -32,6 +32,18 @@ class AppConstants {
   static const String routePlayground = '/playground';
   static const String routeProfile = '/profile';
 
+  /// Маршрут статьи `/article/:id` (шаблон роутера).
+  ///
+  /// Данные статьи/категории всегда достаются по id из репозитория —
+  /// в маршруте передаётся только id (подводный камень №8 из плана).
+  static const String routeArticle = '/article/:id';
+
+  /// Путь к списку статей категории: `/reference/<categoryId>`.
+  static String categoryPath(String categoryId) => '/reference/$categoryId';
+
+  /// Путь к статье: `/article/<articleId>`.
+  static String articlePath(String articleId) => '/article/$articleId';
+
   /// Длительность показа сплэш-экрана.
   static const Duration splashDuration = Duration(milliseconds: 1500);
 }

@@ -83,7 +83,6 @@ class ProfileScreen extends StatelessWidget {
                     backgroundColor: _avatarColor(
                       user?.avatarColor ?? '#2AA79B',
                     ),
-                    foregroundImage: null,
                     child: Text(
                       user?.avatarLetter ?? '?',
                       style: const TextStyle(
