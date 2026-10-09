@@ -9,6 +9,8 @@ import '../features/auth/screens/splash_screen.dart';
 import '../features/auth/session_provider.dart';
 import '../features/home/screens/home_screen.dart';
 import '../features/playground/screens/playground_screen.dart';
+import '../features/playground/screens/snippet_editor_screen.dart';
+import '../features/profile/screens/profile_edit_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
 import '../features/reference/screens/favorites_screen.dart';
 import '../features/reference/screens/history_screen.dart';
@@ -149,6 +151,22 @@ GoRouter buildAppRouter(SessionProvider session, {String? initialLocation}) {
               GoRoute(
                 path: AppConstants.routePlayground,
                 builder: (context, state) => const PlaygroundScreen(),
+                // Редактор — подстраница ветки «Песочница»: push внутрь
+                // ветки сохраняет нижнюю навигацию (назад → в список).
+                routes: [
+                  GoRoute(
+                    path: 'new',
+                    builder: (context, state) => const SnippetEditorScreen(),
+                  ),
+                  GoRoute(
+                    path: 'edit/:id',
+                    // Данные сниппета достаются по id ИЗ ПРОВАЙДЕРА
+                    // (подводный камень №8): в маршруте только число.
+                    builder: (context, state) => SnippetEditorScreen(
+                      snippetId: int.tryParse(state.pathParameters['id']!),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -157,6 +175,14 @@ GoRouter buildAppRouter(SessionProvider session, {String? initialLocation}) {
               GoRoute(
                 path: AppConstants.routeProfile,
                 builder: (context, state) => const ProfileScreen(),
+                // Редактирование профиля — подстраница ветки «Профиль»
+                // (push внутрь ветки, гость — guard отводит на /login).
+                routes: [
+                  GoRoute(
+                    path: 'edit',
+                    builder: (context, state) => const ProfileEditScreen(),
+                  ),
+                ],
               ),
             ],
           ),

@@ -24,13 +24,19 @@ class PlaygroundScreen extends StatefulWidget {
 }
 
 class _PlaygroundScreenState extends State<PlaygroundScreen> {
+  /// Провайдер сохранён в initState (context.read с listen: false разрешён
+  /// в initState): ссылка нужна и для add/removeListener — доступ через
+  /// context в dispose уже невозможен (inherited после unmount).
+  late final PlaygroundDraftProvider _draftProvider;
+
   @override
   void initState() {
     super.initState();
+    _draftProvider = context.read<PlaygroundDraftProvider>();
     // Слушатель черновика: IndexedStack сохраняет состояние вкладок, поэтому
     // initState не перезапускается при повторных визитах — слушатель же
     // живёт все время жизни экрана и срабатывает на каждый setDraft.
-    context.read<PlaygroundDraftProvider>().addListener(_onDraftChanged);
+    _draftProvider.addListener(_onDraftChanged);
     // Первый вход на вкладку при уже записанном черновике (переход
     // go('/playground') создаёт экран без notify): постфрейм-проверка.
     WidgetsBinding.instance.addPostFrameCallback(
@@ -40,12 +46,9 @@ class _PlaygroundScreenState extends State<PlaygroundScreen> {
 
   @override
   void dispose() {
-    // Слушатель снимается той же ссылкой, что и регистрировался; try/catch
-    // не нужен — провайдер переживает экран (глобальный MultiProvider).
-    if (mounted) {
-      // mounted уже false в dispose — доступ к inherited (context.read)
-      // запрещён ПОСЛЕ unmount; снимаем по сохранённому провайдеру.
-    }
+    // Слушатель снимается по сохранённому провайдеру и той же ссылкой,
+    // что регистрировался; context.read в dispose недоступен (unmount).
+    _draftProvider.removeListener(_onDraftChanged);
     super.dispose();
   }
 
@@ -56,10 +59,14 @@ class _PlaygroundScreenState extends State<PlaygroundScreen> {
   }
 
   /// Открыть редактор, если есть неподобранный черновик.
+  ///
+  /// Защита от повторного push: черновик ОДНОРАЗОВЫЙ — редактор забирает
+  /// его в своём init-эффекте; двойной push возможен только если бы
+  /// слушатель и постфрейм-проверка сработали на один и тот же черновик в
+  /// один кадр, поэтому перед push проверяем hasDraft ещё раз.
   void _handleDraftIfNeeded() {
     if (!mounted) return;
-    final draftProvider = context.read<PlaygroundDraftProvider>();
-    if (!draftProvider.hasDraft) return;
+    if (!_draftProvider.hasDraft) return;
     // push, а не go: редактор — страница ВНУТРИ ветки «Песочница» (нижняя
     // навигация остаётся; кнопка «назад» ведёт в список).
     context.push(AppConstants.routeSnippetNew);

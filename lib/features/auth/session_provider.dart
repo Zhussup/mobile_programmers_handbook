@@ -148,4 +148,31 @@ class SessionProvider extends ChangeNotifier {
     _user = null;
     notifyListeners();
   }
+
+  /// Обновление текущего пользователя новой моделью (P11): после изменения
+  /// профиля (имени/email/цвета аватара) экраны, читающие [currentUser],
+  /// перерисуются — иначе профиль показывал бы старые данные.
+  ///
+  /// Чужой/not-logged-in пользователь игнорируется (id обязан совпадать).
+  void updateUser(UserModel user) {
+    final current = _user;
+    if (current == null || current.id != user.id) return;
+    _user = user;
+    notifyListeners();
+  }
+
+  /// Перечитать текущего пользователя из БД (P11: после сохранения профиля).
+  ///
+  /// Сессия (id в prefs) не меняется; ошибка БД гасится — остаются прежние
+  /// данные текущего пользователя (не критично).
+  Future<void> refreshUser() async {
+    final current = _user;
+    if (current == null) return;
+    try {
+      final user = await repository.getUserById(current.id);
+      if (user != null) updateUser(user);
+    } on Exception {
+      // БД недоступна — оставляем прежние данные в памяти (id не менялся).
+    }
+  }
 }

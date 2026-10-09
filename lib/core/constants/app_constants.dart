@@ -44,6 +44,37 @@ class AppConstants {
   static const String routeFavorites = '/favorites';
   static const String routeHistory = '/history';
 
+  // --- Редактор сниппетов (P10) ---
+  /// Редактор в режиме создания (подстраница ветки «Песочница»).
+  static const String routeSnippetNew = '/playground/new';
+
+  /// Редактор в режиме редактирования `/playground/edit/:id` (шаблон).
+  static const String routeSnippetEdit = '/playground/edit/:id';
+
+  /// Путь к редактору сниппета: данные достаются по id ИЗ ПРОВАЙДЕРА
+  /// (подводный камень №8 — в маршруте только id).
+  static String snippetEditPath(int snippetId) => '/playground/edit/$snippetId';
+
+  // --- Профиль 2.0 (P11) ---
+  /// Экран редактирования профиля (приватный для гостя — как все, кроме
+  /// публичного allowlist).
+  static const String routeProfileEdit = '/profile/edit';
+
+  // --- Палитра аватара (P11, экран редактирования профиля) ---
+  /// Фиксированные цвета аватара: hex-строки '#RRGGBB'. Первые два —
+  /// фирменные (бирюзовый/синий), остальные — спокойные добавленные.
+  /// AuthRepository выбирает начальный цвет детерминированно из неё же.
+  static const List<String> avatarPalette = [
+    '#2AA79B', // фирменный бирюзовый
+    '#4D8BF5', // синий
+    '#E0A83F', // янтарный
+    '#D16A8A', // розовый
+    '#8C6FF0', // фиолетовый
+    '#5FA85D', // зелёный
+    '#4BA6C7', // голубой
+    '#C75B4A', // терракотовый
+  ];
+
   /// Путь к списку статей категории: `/reference/<categoryId>`.
   static String categoryPath(String categoryId) => '/reference/$categoryId';
 

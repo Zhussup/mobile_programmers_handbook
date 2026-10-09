@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/db/app_database.dart';
 import '../../core/utils/hash_utils.dart';
+import '../../core/utils/user_uniqueness.dart';
 import 'user_model.dart';
 
 /// Понятная ошибка авторизации/регистрации для UI (русский текст).
@@ -35,26 +36,17 @@ class AuthRepository {
   /// Репозиторий поверх открытой БД и prefs (сессия в `session_user_id`).
   const AuthRepository({required this.db, required this.prefs});
 
-  /// Открытая база (AppDatabase.instance.open()).
+  /// Открытая база.
   final Database db;
 
   /// prefs — ключ `session_user_id` (сессия, не БД).
   final SharedPreferences prefs;
 
-  /// Палитра цветов аватара (хранится hex-строкой).
-  static const List<String> _avatarPalette = [
-    '#2AA79B', // фирменный бирюзовый
-    '#4D8BF5', // синий
-    '#E0A83F', // янтарный
-    '#D16A8A', // розовый
-    '#8C6FF0', // фиолетовый
-    '#5FA85D', // зелёный
-  ];
-
   /// Регистрация нового пользователя: соль + солёный sha256 + INSERT.
   ///
-  /// Дубликаты username/email (без учёта регистра) маппятся в
-  /// [AuthException] с русским сообщением и привязкой к полю формы.
+  /// Дубликаты username/email (без учёта регистра, включая кириллицу)
+  /// маппятся в [AuthException] с русским сообщением и привязкой к полю
+  /// формы (проверка через общий хелпер [UserUniqueness.findConflicts]).
   Future<UserModel> register({
     required String username,
     required String email,
@@ -155,29 +147,26 @@ class AuthRepository {
 
   // --- Внутренние методы ---
 
-  /// Проверка уникальности username/email без учёта регистра (в т.ч.
-  /// кириллицы): читаем таблицу (она локальная и небольшая) и сравниваем
-  /// в Дарте. UNIQUE COLLATE NOCASE в схеме остаётся страховкой.
+  /// Проверка уникальности username/email через общий хелпер (P11):
+  /// без учёта регистра, включая кириллицу (COLLATE NOCASE различает
+  /// только ASCII, кириллицу сравниваем в Дарте).
   Future<void> _assertUnique(String username, String email) async {
-    final rows = await db.query(
-      AppConstants.tableUsers,
-      columns: const ['username', 'email'],
+    final conflicts = await UserUniqueness.findConflicts(
+      db,
+      username: username,
+      email: email,
     );
-    final usernameKey = username.trim().toLowerCase();
-    final emailKey = email.trim().toLowerCase();
-    for (final row in rows) {
-      if ((row['username'] as String).toLowerCase() == usernameKey) {
-        throw const AuthException(
-          'Имя пользователя уже занято',
-          field: AuthField.username,
-        );
-      }
-      if ((row['email'] as String).toLowerCase() == emailKey) {
-        throw const AuthException(
-          'Email уже зарегистрирован',
-          field: AuthField.email,
-        );
-      }
+    if (conflicts.contains(UserFieldConflict.username)) {
+      throw const AuthException(
+        'Имя пользователя уже занято',
+        field: AuthField.username,
+      );
+    }
+    if (conflicts.contains(UserFieldConflict.email)) {
+      throw const AuthException(
+        'Email уже зарегистрирован',
+        field: AuthField.email,
+      );
     }
   }
 
@@ -220,9 +209,10 @@ class AuthRepository {
   }
 
   /// Выбор цвета аватара: детерминированно по имени (хэш по кодам символов,
-  /// т.к. String.hashCode не стабилен между запусками).
+  /// т.к. String.hashCode не стабилен между запусками) из палитры
+  /// [AppConstants.avatarPalette] (единая с экраном редактирования, P11).
   static String _pickAvatarColor(String username) {
-    final palette = _avatarPalette;
+    final palette = AppConstants.avatarPalette;
     var sum = 0;
     for (final rune in username.runes) {
       sum += rune;

@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/article_renderer.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../playground/playground_draft_provider.dart';
+import '../../playground/snippet_model.dart';
+import '../article_model.dart';
 import '../favorites_provider.dart';
 import '../history_provider.dart';
 import '../reference_provider.dart';
@@ -146,10 +151,69 @@ class _ArticleScreenState extends State<ArticleScreen> {
               style: const TextStyle(fontSize: 15, height: 1.45),
             ),
             const SizedBox(height: 20),
-            ArticleRenderer(blocks: article.blocks),
+            // Блоки статьи по порядку; под каждым code-блоком — кнопка
+            // «Открыть в песочнице» (P10: копия кода в редакторе).
+            for (var i = 0; i < article.blocks.length; i++) ...[
+              ArticleRenderer.renderBlock(context, article.blocks[i]),
+              if (article.blocks[i] is ArticleCodeBlock) ...[
+                const SizedBox(height: 8),
+                _OpenInPlaygroundButton(
+                  block: article.blocks[i] as ArticleCodeBlock,
+                  isFirstCodeBlock: i == 0,
+                ),
+                const SizedBox(height: 4),
+              ],
+              if (i != article.blocks.length - 1) const SizedBox(height: 12),
+            ],
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Кнопка «Открыть в песочнице» под code-блоком статьи (P10).
+///
+/// Записывает черновик (код + язык) в [PlaygroundDraftProvider] и ведёт
+/// `context.go('/playground')` — на уровень вкладки (НЕ push, НЕ
+/// extras/аргументы: подводный камень №8). Копия редактируется независимо
+/// от исходной статьи.
+class _OpenInPlaygroundButton extends StatelessWidget {
+  const _OpenInPlaygroundButton({
+    required this.block,
+    required this.isFirstCodeBlock,
+  });
+
+  /// Code-блок статьи, чей код копируется в песочницу.
+  final ArticleCodeBlock block;
+
+  /// Первый code-блок статьи носит ключ-канон, у остальных — суффикс
+  /// (в статье может быть до двух code-блоков, ключи обязаны быть уникальны).
+  final bool isFirstCodeBlock;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return OutlinedButton.icon(
+      key: Key(
+        isFirstCodeBlock
+            ? 'article-open-in-playground'
+            : 'article-open-in-playground-${block.code.length}',
+      ),
+      onPressed: () {
+        final language = snippetLanguageFromRaw(block.language);
+        // 1. Черновик (код + язык статьи) — в провайдер одноразовых черновиков.
+        context.read<PlaygroundDraftProvider>().setDraft(
+              code: block.code,
+              language: language,
+            );
+        // 2. Переход на уровень вкладки «Песочница»: замена стека, экран
+        //    песочницы сам откроет редактор (см. PlaygroundScreen).
+        context.go(AppConstants.routePlayground);
+      },
+      icon: Icon(Icons.terminal, size: 18, color: scheme.primary),
+      label: const Text('Открыть в песочнице'),
     );
   }
 }

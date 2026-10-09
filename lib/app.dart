@@ -10,6 +10,9 @@ import 'core/constants/app_constants.dart';
 import 'core/db/app_database.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/session_provider.dart';
+import 'features/playground/playground_draft_provider.dart';
+import 'features/playground/snippet_provider.dart';
+import 'features/playground/snippet_repository.dart';
 import 'features/profile/theme_provider.dart';
 import 'features/reference/article_repository.dart';
 import 'features/reference/favorites_provider.dart';
@@ -129,6 +132,21 @@ class _MobKursAppState extends State<MobKursApp> {
             unawaited(provider.reload());
             return provider;
           },
+        ),
+        // P10: сниппеты песочницы (user-scoped — слушает SessionProvider) и
+        // одноразовый черновик «Открыть в песочнице».
+        ChangeNotifierProvider<SnippetProvider>(
+          create: (_) {
+            final provider = SnippetProvider(
+              repository: SnippetRepository(db: userDb),
+              session: widget.session,
+            );
+            unawaited(provider.reload());
+            return provider;
+          },
+        ),
+        ChangeNotifierProvider<PlaygroundDraftProvider>(
+          create: (_) => PlaygroundDraftProvider(),
         ),
       ],
       child: Consumer<ThemeProvider>(
