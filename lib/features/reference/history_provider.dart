@@ -99,7 +99,7 @@ class HistoryProvider extends UserScopedProvider {
       _applyLocalRecord(articleId);
       // «Продолжить»/история перерисовываются по факту записи (вызов после
       // await — не во время build).
-      notifyListeners();
+      notifyDataChanged();
     } catch (e) {
       // Ловим любые ошибки (в т.ч. StateError закрытой БД из отложенной
       // операции): история не критична для чтения статьи — только лог.
@@ -129,7 +129,7 @@ class HistoryProvider extends UserScopedProvider {
       await repository.clear(userId);
       if (!isActual(token)) return;
       _entries = const [];
-      notifyListeners();
+      notifyDataChanged();
     } catch (e, stackTrace) {
       // Очистка — восстановимая операция: UI покажет результат по факту
       // (список/снекбар). Rethrow НЕ делаем: сбой БД не должен ронять

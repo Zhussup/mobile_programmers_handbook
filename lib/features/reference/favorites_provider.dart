@@ -109,7 +109,7 @@ class FavoritesProvider extends UserScopedProvider {
     _entries = _buildEntries();
     // Сердечко/список перерисовываются по факту (не во время build —
     // вызов после await).
-    notifyListeners();
+    notifyDataChanged();
     return added;
   }
 

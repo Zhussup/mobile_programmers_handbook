@@ -25,6 +25,11 @@ abstract class UserScopedProvider extends ChangeNotifier {
   /// Счётчик операций загрузки (устаревшие ответы отбрасываются).
   int _generation = 0;
 
+  /// Провайдер разобран (dispose): отложенный ответ БД может настичь его
+  /// уже ПОСЛЕ teardown — уведомлять в этом случае нельзя (иначе
+  /// «use after being disposed» от notifyListeners).
+  bool _disposed = false;
+
   /// Id вошедшего пользователя (null — гость).
   int? get currentUserId => _session.currentUser?.id;
 
@@ -33,6 +38,16 @@ abstract class UserScopedProvider extends ChangeNotifier {
 
   /// Присвоить метку новой операции загрузки.
   int beginLoad() => ++_generation;
+
+  /// Безопасное уведомление слушателей: после dispose — молча пропустить.
+  ///
+  /// Подклассы вызывают его вместо прямого [notifyListeners] — отложенные
+  /// операции (реальная БД-IO) могут завершаться уже после teardown.
+  @protected
+  void notifyDataChanged() {
+    if (_disposed) return;
+    notifyListeners();
+  }
 
   /// (Re)загрузка данных текущего пользователя (null → пустое состояние).
   ///
@@ -44,7 +59,7 @@ abstract class UserScopedProvider extends ChangeNotifier {
     // За время запроса пользователь сменился — данные уже перезагрузит
     // актуальная операция; не перетираем их устаревшими.
     if (!isActual(token)) return;
-    notifyListeners();
+    notifyDataChanged();
   }
 
   /// Перегрузка данных пользователя (реализация в наследнике).
@@ -60,6 +75,7 @@ abstract class UserScopedProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    _disposed = true;
     _session.removeListener(_onSessionChanged);
     super.dispose();
   }
