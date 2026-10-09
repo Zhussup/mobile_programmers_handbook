@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:mob_kurs/core/db/app_database.dart';
 import 'package:mob_kurs/features/auth/auth_repository.dart';
-import 'package:mob_kurs/features/auth/user_model.dart';
 
 /// Юнит-тесты репозитория пользователей: in-memory БД через
 /// sqflite_common_ffi (подводный камень №3 из плана).

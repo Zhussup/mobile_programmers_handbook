@@ -15,24 +15,29 @@ import '../features/reference/screens/reference_screen.dart';
 /// перехода либо null (продолжить навигацию).
 ///
 /// Правила:
-/// - authorized → прочь с /splash, /login, /register (иначе петля);
-///   до истечения таймера не блокируется — уход со сплэша возможен только
-///   по его таймеру (context.go в SplashScreen);
+/// - authorized → прочь с /login, /register (иначе петля);
+///   сплэш не блокируется даже для вошедшего — он гарантированно отыгрывает
+///   таймер, затем сам ведёт на /home (context.go в SplashScreen);
 /// - guest → прочь с непубличных маршрутов на /login.
 String? authRedirect(String location, AuthState auth) {
-  const authScreens = {
+  const public = {
     AppConstants.routeSplash,
     AppConstants.routeLogin,
     AppConstants.routeRegister,
   };
 
   if (auth.isAuthorized) {
+    // Вошедшего не пускаем на логин/регистрацию (иначе петля). Сплэш не
+    // блокируем: он гарантрованно отыгрывает таймер, затем сам ведёт на
+    // /home (см. SplashScreen._goNext).
+    const authScreens = {AppConstants.routeLogin, AppConstants.routeRegister};
     return authScreens.contains(location) ? AppConstants.routeHome : null;
   }
 
   // Гость (или unknown — до восстановления сессии; в приложении сессия
-  // восстановлена ещё до runApp): непубличное — на /login.
-  return authScreens.contains(location) ? null : AppConstants.routeLogin;
+  // восстановлена ещё до runApp): непубличное — на /login, публичное
+  // (включая сплэш до истечения таймера) открыто.
+  return public.contains(location) ? null : AppConstants.routeLogin;
 }
 
 /// Сборка GoRouter: сплэш, логин, регистрация + StatefulShellRoute с 4

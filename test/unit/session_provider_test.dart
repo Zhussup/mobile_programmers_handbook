@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sqflite/sqflite.dart' hide DatabaseException;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -34,8 +33,7 @@ void main() {
     repository = AuthRepository(db: db, prefs: prefs);
   });
 
-  test('до restoreSession состояние unknown (сессия ещё не восстановлена)',
-      () {
+  test('до restoreSession состояние unknown (сессия ещё не восстановлена)', () {
     final session = SessionProvider(repository: repository);
     expect(session.state.status, AuthStatus.unknown);
   });
@@ -59,30 +57,29 @@ void main() {
 
     expect(session.currentUser?.id, user.id);
     expect(session.state.isAuthorized, isTrue);
-    expect(
-      prefs.getInt(AppConstants.prefSessionUserId),
-      user.id,
-    );
+    expect(prefs.getInt(AppConstants.prefSessionUserId), user.id);
   });
 
-  test('restoreSession «после перезапуска» восстанавливает пользователя',
-      () async {
-    // «Прошлый запуск»: регистрация + persist.
-    final previous = SessionProvider(repository: repository);
-    await previous.restoreSession();
-    final user = await previous.register(
-      username: 'user1',
-      email: 'user1@example.com',
-      password: 'пароль123',
-    );
+  test(
+    'restoreSession «после перезапуска» восстанавливает пользователя',
+    () async {
+      // «Прошлый запуск»: регистрация + persist.
+      final previous = SessionProvider(repository: repository);
+      await previous.restoreSession();
+      final user = await previous.register(
+        username: 'user1',
+        email: 'user1@example.com',
+        password: 'пароль123',
+      );
 
-    // «Новый запуск» (prefs те же, provider новый) — восстановление.
-    final restored = SessionProvider(repository: repository);
-    await restored.restoreSession();
-    expect(restored.state.isAuthorized, isTrue);
-    expect(restored.currentUser?.id, user.id);
-    expect(restored.currentUser?.username, 'user1');
-  });
+      // «Новый запуск» (prefs те же, provider новый) — восстановление.
+      final restored = SessionProvider(repository: repository);
+      await restored.restoreSession();
+      expect(restored.state.isAuthorized, isTrue);
+      expect(restored.currentUser?.id, user.id);
+      expect(restored.currentUser?.username, 'user1');
+    },
+  );
 
   test('restoreSession с «висящим» id (запись удалена) → guest', () async {
     // Регистрируем пользователя, удаляем его запись из БД напрямую.

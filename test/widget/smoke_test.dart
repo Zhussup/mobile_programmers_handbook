@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:mob_kurs/app.dart';
 import 'package:mob_kurs/core/constants/app_constants.dart';
 
 import 'harness.dart';
@@ -33,14 +32,14 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     await tester.pump(const Duration(seconds: 1));
 
-    expect(find.text('Авторизация'), findsOneWidget);
+    expect(find.widgetWithText(AppBar, 'Авторизация'), findsOneWidget);
   });
 
   testWidgets(
       'Смок-тест: при восстановленной сессии сплэш ведёт на /home (перезапуск '
       'сразу на главную, без логина)', (tester) async {
     // «Прошлый запуск»: пользователь зарегистрировался и вошёл.
-    await harness.registerUser();
+    await harness.registerUser(tester);
 
     await harness.pumpApp(tester, initialLocation: AppConstants.routeSplash);
     expect(find.text(AppConstants.appName), findsOneWidget);
@@ -50,7 +49,7 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     await tester.pump(const Duration(seconds: 1));
 
-    expect(find.text('Главная'), findsOneWidget);
-    expect(find.text('Авторизация'), findsNothing);
+    expect(find.widgetWithText(AppBar, 'Главная'), findsOneWidget);
+    expect(find.widgetWithText(AppBar, 'Авторизация'), findsNothing);
   });
 }

@@ -29,13 +29,14 @@ void main() {
   });
 
   group('вошедший пользователь', () {
-    const authorized = AuthState(
-      status: AuthStatus.authorized,
-    );
-    test('не возвращается на логин/регистрацию/сплэш → /home', () {
+    const authorized = AuthState(status: AuthStatus.authorized);
+    test('не возвращается на логин/регистрацию → /home', () {
       expect(authRedirect(login, authorized), home);
       expect(authRedirect(register, authorized), home);
-      expect(authRedirect(splash, authorized), home);
+    });
+
+    test('сплэш не блокируется до истечения таймера (уход по таймеру)', () {
+      expect(authRedirect(splash, authorized), isNull);
     });
 
     test('приватные маршруты открыты', () {
