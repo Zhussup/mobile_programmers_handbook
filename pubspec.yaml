@@ -45,6 +45,10 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
+  # Интеграционные тесты на эмуляторе (P7: прогон демо-сценария + скриншоты).
+  integration_test:
+    sdk: flutter
+
   flutter_lints: ^6.0.0
 
   # Нативный splash (android) — генерируется из assets/icons/logo.png.
