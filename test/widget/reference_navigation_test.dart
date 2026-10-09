@@ -189,7 +189,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('Песочница кода появится в P10'), findsOneWidget);
+      expect(find.byKey(const Key('playground-empty')), findsOneWidget);
 
       // Профиль: имя и email пользователя в карточке.
       await tester.tap(

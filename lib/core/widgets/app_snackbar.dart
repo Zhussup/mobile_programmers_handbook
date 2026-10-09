@@ -22,6 +22,9 @@ class AppSnackBarMessages {
 
   /// История (P9): очищена кнопкой «Очистить».
   static const String historyCleared = 'История очищена';
+
+  /// Профиль 2.0 (P11): пароль изменён.
+  static const String passwordChanged = 'Пароль изменён';
 }
 
 /// Единый SnackBar приложения: базовая версия (message + isError) и

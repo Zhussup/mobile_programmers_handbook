@@ -5,13 +5,18 @@ import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../auth/session_provider.dart';
+import '../../playground/snippet_provider.dart';
+import '../../reference/favorites_provider.dart';
+import '../../reference/history_provider.dart';
 import '../theme_provider.dart';
 
-/// Раздел «Профиль» (вкладка) — версия 1 (P5).
+/// Раздел «Профиль» (вкладка) — версия 2 (P11).
 ///
-/// Карточка пользователя (аватар-цвет, имя, email, дата регистрации),
-/// переключатель темы (persist в prefs) и кнопка «Выйти» с диалогом
-/// подтверждения: logout + context.go('/login') (критерий «выход», 5 б.).
+/// Карточка пользователя (аватар-цвет, имя, email, дата регистрации) с
+/// кнопкой «Редактировать» (→ /profile/edit), строка статистики «Прочитано /
+/// В избранном / Сниппеты» (user-scoped провайдеры — данные текущего
+/// пользователя), переключатель темы (persist в prefs) и кнопка «Выйти» с
+/// диалогом подтверждения: logout + context.go('/login').
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
@@ -52,16 +57,61 @@ class ProfileScreen extends StatelessWidget {
     }
   }
 
-  /// Разбор hex-цвета аватара (#RRGGBB → Color).
+  /// Разбор hex-цвета '#RRGGBB' в Color (аватар в карточке).
   static Color _avatarColor(String hex) {
     final digits = hex.replaceFirst('#', '');
     return Color(int.parse(digits, radix: 16) | 0xFF000000);
+  }
+
+  /// Одна карточка статистики: число + подпись (ключ на значении —
+  /// виджет-тесты проверяют именно цифры).
+  Widget _statCard({
+    required BuildContext context,
+    required String keyName,
+    required String count,
+    required String label,
+  }) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Expanded(
+      child: Card(
+        margin: EdgeInsets.zero,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                count,
+                key: Key(keyName),
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: scheme.primary,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: theme.textTheme.bodySmall,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final session = context.watch<SessionProvider>();
     final themeProvider = context.watch<ThemeProvider>();
+    // Статистика читает user-scoped провайдеры (загрузка при первом чтении).
+    final history = context.watch<HistoryProvider>();
+    final favorites = context.watch<FavoritesProvider>();
+    final snippets = context.watch<SnippetProvider>();
     final user = session.currentUser;
 
     final theme = Theme.of(context);
@@ -130,6 +180,35 @@ class ProfileScreen extends StatelessWidget {
 
             const SizedBox(height: 12),
 
+            // --- Статистика: Прочитано / В избранном / Сниппеты ---
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _statCard(
+                  context: context,
+                  keyName: 'profile-stats-read',
+                  count: '${history.entries.length}',
+                  label: 'Прочитано',
+                ),
+                const SizedBox(width: 10),
+                _statCard(
+                  context: context,
+                  keyName: 'profile-stats-favorites',
+                  count: '${favorites.entries.length}',
+                  label: 'В избранном',
+                ),
+                const SizedBox(width: 10),
+                _statCard(
+                  context: context,
+                  keyName: 'profile-stats-snippets',
+                  count: '${snippets.entries.length}',
+                  label: 'Сниппеты',
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 12),
+
             // --- О приложении (критерий: основные сведения) ---
             Card(
               child: Padding(
@@ -187,6 +266,18 @@ class ProfileScreen extends StatelessWidget {
                   ],
                 ),
               ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // --- Редактировать профиль (P11) — push приватного маршрута ---
+            OutlinedButton.icon(
+              key: const Key('profile-edit-open'),
+              onPressed: user == null
+                  ? null
+                  : () => context.push(AppConstants.routeProfileEdit),
+              icon: const Icon(Icons.edit_outlined),
+              label: const Text('Редактировать'),
             ),
 
             const SizedBox(height: 12),

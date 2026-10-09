@@ -96,9 +96,11 @@ class Snippet {
     );
   }
 
-  /// Модель → карта полей для INSERT/UPDATE (id/userId задаёт вызывающий).
+  /// Модель → карта полей для INSERT/UPDATE (id не входит — его задаёт
+  /// AUTOINCREMENT при создании; user_id — владелец сниппета).
   Map<String, Object?> toMap() {
     return {
+      'user_id': userId,
       'title': title,
       'language': language.raw,
       'code': code,

@@ -13,6 +13,7 @@ import 'features/auth/session_provider.dart';
 import 'features/playground/playground_draft_provider.dart';
 import 'features/playground/snippet_provider.dart';
 import 'features/playground/snippet_repository.dart';
+import 'features/profile/profile_repository.dart';
 import 'features/profile/theme_provider.dart';
 import 'features/reference/article_repository.dart';
 import 'features/reference/favorites_provider.dart';
@@ -147,6 +148,11 @@ class _MobKursAppState extends State<MobKursApp> {
         ),
         ChangeNotifierProvider<PlaygroundDraftProvider>(
           create: (_) => PlaygroundDraftProvider(),
+        ),
+        // P11: репозиторий профиля для экрана редактирования (changePassword,
+        // updateProfile — поверх той же БД пользовательских данных).
+        Provider<ProfileRepository>(
+          create: (_) => ProfileRepository(db: userDb),
         ),
       ],
       child: Consumer<ThemeProvider>(
