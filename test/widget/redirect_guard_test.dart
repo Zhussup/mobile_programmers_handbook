@@ -56,4 +56,33 @@ void main() {
     expect(find.widgetWithText(AppBar, 'Главная'), findsOneWidget);
     expect(find.widgetWithText(AppBar, 'Регистрация'), findsNothing);
   });
+
+  group('несуществующий маршрут (P13 — навигация без ошибок)', () {
+    testWidgets('вошедший: 404-заглушка, приложение не падает', (tester) async {
+      await harness.registerUser(tester);
+      await harness.pumpApp(tester, initialLocation: '/definitely/not/exist');
+
+      expect(find.byKey(const Key('route-not-found')), findsOneWidget);
+      expect(
+        find.widgetWithText(AppBar, 'Страница не найдена'),
+        findsOneWidget,
+      );
+      expect(
+        find.byType(Navigator),
+        findsWidgets,
+        reason: 'приложение живо — навигация работает',
+      );
+    });
+
+    testWidgets('гость: 404 недоступен — guard уводит на /login', (
+      tester,
+    ) async {
+      await harness.pumpApp(tester, initialLocation: '/definitely/not/exist');
+
+      // Публичных «мусорных» маршрутов нет непубличным быть не может:
+      // redirect отводит гостя на авторизацию, а не на 404-заглушку.
+      expect(find.byKey(const Key('route-not-found')), findsNothing);
+      expect(find.widgetWithText(AppBar, 'Авторизация'), findsOneWidget);
+    });
+  });
 }

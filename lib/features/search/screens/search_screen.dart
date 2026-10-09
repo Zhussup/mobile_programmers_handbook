@@ -85,7 +85,9 @@ class _SearchScreenState extends State<SearchScreen> {
                           },
                           icon: const Icon(Icons.clear),
                         ),
-                  border: const OutlineInputBorder(),
+                  // Рамка — из inputDecorationTheme темы (radius 12, единый
+                  // стиль форм на всех экранах): локальный OutlineInputBorder
+                  // перебивал её на 4 px.
                 ),
                 onChanged: (value) {
                   setState(() {}); // перерисовать suffix-кнопку очистки

@@ -91,8 +91,12 @@ void main() {
           ),
           throwsA(
             isA<ProfileException>()
-              .having((e) => e.field, 'field', ProfileField.username)
-              .having((e) => e.message, 'message', 'Имя пользователя уже занято'),
+                .having((e) => e.field, 'field', ProfileField.username)
+                .having(
+                  (e) => e.message,
+                  'message',
+                  'Имя пользователя уже занято',
+                ),
           ),
         );
       },
@@ -115,42 +119,44 @@ void main() {
         expect(
           () => repository.updateProfile(other.id, username: 'Иван'),
           throwsA(
-            isA<ProfileException>()
-              .having((e) => e.field, 'field', ProfileField.username),
+            isA<ProfileException>().having(
+              (e) => e.field,
+              'field',
+              ProfileField.username,
+            ),
           ),
         );
       },
     );
 
-    test(
-      'конфликт email уже зарегистрирован → ошибка поля email',
-      () async {
-        final first = await auth.register(
-          username: 'first',
-          email: 'shared@example.com',
-          password: 'пароль123',
-        );
-        final second = await auth.register(
-          username: 'second',
-          email: 'second@example.com',
-          password: 'пароль123',
-        );
+    test('конфликт email уже зарегистрирован → ошибка поля email', () async {
+      final first = await auth.register(
+        username: 'first',
+        email: 'shared@example.com',
+        password: 'пароль123',
+      );
+      final second = await auth.register(
+        username: 'second',
+        email: 'second@example.com',
+        password: 'пароль123',
+      );
 
-        expect(
-          () => repository.updateProfile(
-            second.id,
-            email: 'SHARED@example.com',
+      expect(
+        () => repository.updateProfile(second.id, email: 'SHARED@example.com'),
+        throwsA(
+          isA<ProfileException>().having(
+            (e) => e.field,
+            'field',
+            ProfileField.email,
           ),
-          throwsA(
-            isA<ProfileException>()
-              .having((e) => e.field, 'field', ProfileField.email),
-          ),
-        );
-        // first цел после неудачной попытки второго.
-        expect((await repository.getUserRow(first.id))!.email,
-            'shared@example.com');
-      },
-    );
+        ),
+      );
+      // first цел после неудачной попытки второго.
+      expect(
+        (await repository.getUserRow(first.id))!.email,
+        'shared@example.com',
+      );
+    });
 
     test(
       'свой текущий username/email не конфликтуют (без изменений)',
@@ -201,8 +207,8 @@ void main() {
         ),
         throwsA(
           isA<ProfileException>()
-            .having((e) => e.field, 'field', ProfileField.oldPassword)
-            .having((e) => e.message, 'message', 'Неверный старый пароль'),
+              .having((e) => e.field, 'field', ProfileField.oldPassword)
+              .having((e) => e.message, 'message', 'Неверный старый пароль'),
         ),
       );
       // Пароль не изменился: старый всё ещё подходит.
@@ -259,7 +265,10 @@ void main() {
         whereArgs: [user.id],
       );
       expect(after.single['salt'], isNot(oldSalt));
-      expect(after.single['password_hash'], isNot(before.single['password_hash']));
+      expect(
+        after.single['password_hash'],
+        isNot(before.single['password_hash']),
+      );
     });
   });
 

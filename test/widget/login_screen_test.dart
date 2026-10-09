@@ -139,8 +139,24 @@ void main() {
       await harness.pumpApp(tester, initialLocation: AppConstants.routeProfile);
 
       expect(find.byType(ProfileScreen), findsOneWidget);
+      // P11: профиль читает user-scoped провайдеры — их стартовая загрузка
+      // реальная IO (иначе pending timer в конце теста).
+      await harness.settleRealIo(tester);
 
-      // Открыть диалог подтверждения.
+      // Открыть диалог подтверждения. P11: экран профиля стал длиннее
+      // (кнопка «Редактировать» + карточки статистики) — «Выйти» ниже
+      // видимой области, прокрутить до неё.
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('logout-button')),
+        200,
+        scrollable: find
+            .descendant(
+              of: find.byType(ProfileScreen),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('logout-button')));
       await tester.pump(const Duration(seconds: 1));
       expect(find.text('Выйти из аккаунта?'), findsOneWidget);
@@ -149,6 +165,8 @@ void main() {
       // выполняется по закрытию) и переход на /login.
       await harness.tapAndWaitReal(tester, const Key('logout-confirm'));
       await tester.pump(const Duration(milliseconds: 300));
+      // Выход уведомил user-scoped провайдеры (выгрузка данных — тоже IO).
+      await harness.settleRealIo(tester);
       await tester.pumpAndSettle();
 
       // Оказались на авторизации: доступ к закрытым разделам требует входа.

@@ -84,3 +84,14 @@ flutter_native_splash:
   android: true
   ios: false
   web: false
+
+# Иконка приложения (P14; генерация: dart run flutter_launcher_icons).
+# Обычная иконка — logo.png; adaptive-иконка: фон фирменный, foreground —
+# android12.png (лого в центральной безопасной зоне ~2/3, как требует Android 8+).
+flutter_launcher_icons:
+  image_path: "assets/icons/logo.png"
+  android: true
+  ios: false
+  min_sdk_android: 21
+  adaptive_icon_background: "#1E2A37"
+  adaptive_icon_foreground: "assets/icons/android12.png"

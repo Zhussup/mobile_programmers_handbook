@@ -13,10 +13,8 @@ import 'snippet_repository.dart';
 /// даже при попытке открыть `/playground/edit/:id` по чужому id.
 class SnippetProvider extends UserScopedProvider {
   /// Провайдер поверх репозитория + подписка на [SessionProvider].
-  SnippetProvider({
-    required this.repository,
-    required SessionProvider session,
-  }) : super(session);
+  SnippetProvider({required this.repository, required SessionProvider session})
+    : super(session);
 
   /// Репозиторий сниппетов (SQLite).
   final SnippetRepository repository;

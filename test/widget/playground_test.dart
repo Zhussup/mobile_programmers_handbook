@@ -236,8 +236,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // Вкладка песочницы: черновик сразу открыл редактор создания.
-      expect(find.byType(PlaygroundScreen), findsNothing,
-          reason: 'список под стеком — наверху редактор');
+      expect(
+        find.byType(PlaygroundScreen),
+        findsNothing,
+        reason: 'список под стеком — наверху редактор',
+      );
       expect(find.byType(SnippetEditorScreen), findsOneWidget);
       expect(find.text('Новый сниппет'), findsOneWidget);
       expect(codeController(tester).text, 'int main() { return 0; }');
@@ -263,10 +266,7 @@ void main() {
       await openPlayground(tester);
       harness.goRoute(tester, AppConstants.snippetEditPath(999999));
       await tester.pumpAndSettle();
-      expect(
-        find.byKey(const Key('snippet-not-found')),
-        findsOneWidget,
-      );
+      expect(find.byKey(const Key('snippet-not-found')), findsOneWidget);
     },
   );
 }

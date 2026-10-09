@@ -346,5 +346,46 @@ void main() {
       expect(history.entries, isEmpty);
       expect(history.loading, isFalse);
     });
+
+    test(
+      'clear при сбое БД пробрасывает Exception, а не молчит (P13)',
+      () async {
+        // Отдельное in-memory соединение: оно независимо от общей «db» теста
+        // (каждый :memory: — своя база), закрытие ломает только этот провайдер.
+        final broken = await databaseFactory.openDatabase(
+          inMemoryDatabasePath,
+          options: OpenDatabaseOptions(
+            version: AppDatabase.dbVersion,
+            onCreate: AppDatabase.onCreate,
+          ),
+        );
+        final brokenSession = SessionProvider(
+          repository: AuthRepository(db: broken, prefs: prefs),
+        );
+        await brokenSession.restoreSession();
+        final user = await brokenSession.register(
+          username: 'u_clearfail',
+          email: 'u_clearfail@example.com',
+          password: 'пароль123',
+        );
+
+        final history = HistoryProvider(
+          articles: articles,
+          repository: HistoryRepository(db: broken),
+          session: brokenSession,
+        );
+        await history.reload();
+        await history.record('fx_syn_var');
+        expect(history.entries, hasLength(1));
+        expect(user.id, isNotNull);
+
+        // Ломаем соединение — clear обязан дать НАБЛЮДАЕМУЮ ошибку для
+        // снекбара экрана, а не тихое «История очищена».
+        await broken.close();
+        await expectLater(history.clear(), throwsException);
+        // Состояние провайдера при этом не испорчено.
+        expect(history.entries, hasLength(1));
+      },
+    );
   });
 }

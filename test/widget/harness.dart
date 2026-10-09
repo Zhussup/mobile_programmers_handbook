@@ -73,11 +73,12 @@ class AppHarness {
     WidgetTester tester, {
     required String initialLocation,
     ArticleRepository? referenceRepository,
+    ThemeMode themeMode = ThemeMode.light,
   }) async {
     await tester.pumpWidget(
       MobKursApp(
         prefs: prefs,
-        initialThemeMode: ThemeMode.light,
+        initialThemeMode: themeMode,
         session: session,
         initialLocation: initialLocation,
         referenceRepository:

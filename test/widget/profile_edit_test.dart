@@ -145,7 +145,9 @@ void main() {
       // ('#2AA79B' — user с ним зарегистрирован).
       for (final hex in AppConstants.avatarPalette) {
         expect(
-          find.byKey(Key('profile-color-${hex.replaceFirst('#', '').toLowerCase()}')),
+          find.byKey(
+            Key('profile-color-${hex.replaceFirst('#', '').toLowerCase()}'),
+          ),
           findsOneWidget,
           reason: 'свотч $hex должен быть в палитре',
         );
@@ -193,10 +195,7 @@ void main() {
         find.byKey(const Key('profile-password-save')),
       );
       await tester.pumpAndSettle();
-      await harness.tapAndWaitReal(
-        tester,
-        const Key('profile-password-save'),
-      );
+      await harness.tapAndWaitReal(tester, const Key('profile-password-save'));
       await tester.pumpAndSettle();
 
       expect(find.text('Неверный старый пароль'), findsOneWidget);
@@ -228,10 +227,7 @@ void main() {
         find.byKey(const Key('profile-password-save')),
       );
       await tester.pumpAndSettle();
-      await harness.tapAndWaitReal(
-        tester,
-        const Key('profile-password-save'),
-      );
+      await harness.tapAndWaitReal(tester, const Key('profile-password-save'));
       await tester.pumpAndSettle();
 
       expect(find.text('Пароль изменён'), findsOneWidget);

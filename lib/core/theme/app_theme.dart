@@ -39,6 +39,11 @@ class AppTheme {
       colorScheme: scheme,
       // Заголовки на тёмном фоне — читаемые, но не «висящие» (заголовок AppBar).
       scaffoldBackgroundColor: dark ? BrandColors.background : scheme.surface,
+      // ЕДИНЫЙ AppBar всех экранов (P12): стиль задаётся здесь — ни один
+      // экран не переопределяет его в build. centerTitle: true — заголовок
+      // по центру на всех экранах; высота — стандартная (toolbar), без
+      // elevation/теней; тёмный фон совпадает с фоном Scaffold (без полосы).
+      // Действия — IconButton в actions, русские заголовки через `title:`.
       appBarTheme: AppBarTheme(
         centerTitle: true,
         backgroundColor: dark ? BrandColors.background : scheme.primary,

@@ -128,7 +128,7 @@ class _ArticleScreenState extends State<ArticleScreen> {
       ),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 28),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
           children: [
             // Сложность + теги (tags — для поиска P8); история пишется
             // в postFrame initState'а.
@@ -209,9 +209,9 @@ class _OpenInPlaygroundButton extends StatelessWidget {
         final language = snippetLanguageFromRaw(block.language);
         // 1. Черновик (код + язык статьи) — в провайдер одноразовых черновиков.
         context.read<PlaygroundDraftProvider>().setDraft(
-              code: block.code,
-              language: language,
-            );
+          code: block.code,
+          language: language,
+        );
         // 2. Переход на уровень вкладки «Песочница»: замена стека, экран
         //    песочницы сам откроет редактор (см. PlaygroundScreen).
         context.go(AppConstants.routePlayground);

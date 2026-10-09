@@ -57,7 +57,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     _avatarColor = user?.avatarColor;
   }
 
-
   void _clearEmailError() {
     if (_emailError != null) setState(() => _emailError = null);
   }
@@ -156,13 +155,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     if (user == null) return;
 
     try {
-      await context
-          .read<ProfileRepository>()
-          .changePassword(
-            userId: user.id,
-            oldPassword: _oldController.text,
-            newPassword: _newController.text,
-          );
+      await context.read<ProfileRepository>().changePassword(
+        userId: user.id,
+        oldPassword: _oldController.text,
+        newPassword: _newController.text,
+      );
       if (!mounted) return;
       showAppSnackBar(context, AppSnackBarMessages.passwordChanged);
       // Поля очищаются: пароль «израсходован», повторный submit — с новыми.
@@ -209,7 +206,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text('Данные аккаунта', style: theme.textTheme.titleSmall),
+                        Text(
+                          'Данные аккаунта',
+                          style: theme.textTheme.titleSmall,
+                        ),
                         const SizedBox(height: 14),
                         TextFormField(
                           key: const Key('profile-edit-username'),
@@ -247,11 +247,16 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                           spacing: 10,
                           runSpacing: 10,
                           children: [
-                            for (var i = 0; i < AppConstants.avatarPalette.length; i++)
+                            for (
+                              var i = 0;
+                              i < AppConstants.avatarPalette.length;
+                              i++
+                            )
                               _AvatarSwatch(
                                 colorHex: AppConstants.avatarPalette[i],
                                 selected:
-                                    _avatarColor == AppConstants.avatarPalette[i],
+                                    _avatarColor ==
+                                    AppConstants.avatarPalette[i],
                                 onTap: () => setState(
                                   () => _avatarColor =
                                       AppConstants.avatarPalette[i],
@@ -312,8 +317,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                           ),
                           validator: (value) =>
                               (value == null || value.trim().isEmpty)
-                                  ? 'Введите старый пароль'
-                                  : null,
+                              ? 'Введите старый пароль'
+                              : null,
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
@@ -340,9 +345,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                           ),
                           validator: (value) =>
                               Validators.validatePasswordConfirm(
-                            _newController.text,
-                            value,
-                          ),
+                                _newController.text,
+                                value,
+                              ),
                         ),
                         const SizedBox(height: 16),
                         FilledButton(
@@ -424,4 +429,3 @@ Color _hexToColor(String hex) {
   final digits = hex.replaceFirst('#', '');
   return Color(int.parse(digits, radix: 16) | 0xFF000000);
 }
-

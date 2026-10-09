@@ -6,6 +6,7 @@ import 'package:mob_kurs/core/constants/app_constants.dart';
 import 'package:mob_kurs/core/db/app_database.dart';
 import 'package:mob_kurs/features/auth/auth_repository.dart';
 import 'package:mob_kurs/features/auth/session_provider.dart';
+import 'package:mob_kurs/features/profile/profile_repository.dart';
 
 /// Юнит-тесты сессии: persist `session_user_id` и восстановление при
 /// «перезапуске» (новый провайдер + те же prefs).
@@ -116,5 +117,56 @@ void main() {
     // Выход не удалил пользователя из БД.
     final loaded = await repository.getUserById(user.id);
     expect(loaded, isNotNull);
+  });
+
+  group('restoreSession после смены пароля (P13)', () {
+    test(
+      'сессия переживает смену пароля: рестарт — снова авторизован',
+      () async {
+        // 1. «Прошлый запуск»: регистрация, сессия сохранена.
+        final previous = SessionProvider(repository: repository);
+        await previous.restoreSession();
+        final user = await previous.register(
+          username: 'user1',
+          email: 'user1@example.com',
+          password: 'пароль123',
+        );
+
+        // 2. Смена пароля (репозиторий профиля P11): сессию не трогаем.
+        final profiles = ProfileRepository(db: db);
+        await profiles.changePassword(
+          userId: user.id,
+          oldPassword: 'пароль123',
+          newPassword: 'новый456',
+        );
+
+        // 3. «Рестарт»: новый провайдер поверх тех же prefs — СЕССИЯ ЖИВА
+        //    (persist хранит id, а не пароль).
+        final restored = SessionProvider(repository: repository);
+        await restored.restoreSession();
+        expect(restored.state.isAuthorized, isTrue);
+        expect(restored.currentUser?.id, user.id);
+
+        // 4. Вход с НОВЫМ паролем работает.
+        final session2 = SessionProvider(repository: repository);
+        await session2.restoreSession();
+        final relogin = await session2.login(
+          loginOrEmail: 'user1@example.com',
+          password: 'новый456',
+        );
+        expect(relogin.id, user.id);
+
+        // 5. Вход со СТАРЫМ паролем больше не проходит.
+        final session3 = SessionProvider(repository: repository);
+        await session3.restoreSession();
+        await expectLater(
+          session3.login(
+            loginOrEmail: 'user1@example.com',
+            password: 'пароль123',
+          ),
+          throwsA(isA<AuthException>()),
+        );
+      },
+    );
   });
 }

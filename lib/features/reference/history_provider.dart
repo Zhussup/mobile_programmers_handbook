@@ -119,23 +119,26 @@ class HistoryProvider extends UserScopedProvider {
 
   /// Очистка истории текущего пользователя (кнопка «Очистить»).
   ///
-  /// Ошибка БД не пробрасывается — экран покажет снекбар по факту успеха
-  /// в UI-обработчике.
+  /// Ошибка БД ПРОБРАСЫВАЕТСЯ как Exception, но не роняет приложение:
+  /// экран показывает красный снекбар («Не удалось очистить историю») вместо
+  /// ложного «История очищена» — фидбек обязан отражать реальный результат
+  /// операции (подводный камень №6 из плана).
   Future<void> clear() async {
     final userId = currentUserId;
     if (userId == null) return;
     final token = beginLoad();
     try {
       await repository.clear(userId);
-      if (!isActual(token)) return;
-      _entries = const [];
-      notifyDataChanged();
     } catch (e, stackTrace) {
-      // Очистка — восстановимая операция: UI покажет результат по факту
-      // (список/снекбар). Rethrow НЕ делаем: сбой БД не должен ронять
-      // приложение, а экран узнаёт об ошибке по «залипшему» списку.
+      // Ловим любые ошибки (в т.ч. StateError закрытой БД — это Error, а не
+      // Exception) и отдаём наружу типом Exception, который экран умеет
+      // гасить в снекбар ошибки.
       debugPrint('История: очистка не удалась ($e)');
       debugPrint('$stackTrace');
+      throw Exception('История: очистка не удалась');
     }
+    if (!isActual(token)) return; // пользователь сменился за время запроса
+    _entries = const [];
+    notifyDataChanged();
   }
 }

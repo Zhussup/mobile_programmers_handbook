@@ -63,29 +63,26 @@ void main() {
       expect(read.updatedAt, created.updatedAt);
     });
 
-    test(
-      'Dart-сниппет: язык сохраняется по raw-имени варианта enum',
-      () async {
-        final created = await repository.create(
-          userId: 1,
-          title: 'Dart example',
-          language: SnippetLanguage.dart,
-          code: "void main() { print('hi'); }",
-          expectedOutput: 'hi',
-        );
+    test('Dart-сниппет: язык сохраняется по raw-имени варианта enum', () async {
+      final created = await repository.create(
+        userId: 1,
+        title: 'Dart example',
+        language: SnippetLanguage.dart,
+        code: "void main() { print('hi'); }",
+        expectedOutput: 'hi',
+      );
 
-        final row = await db.query(
-          AppConstants.tableUserSnippets,
-          where: 'id = ?',
-          whereArgs: [created.id],
-        );
-        expect(row.single['language'], 'dart');
+      final row = await db.query(
+        AppConstants.tableUserSnippets,
+        where: 'id = ?',
+        whereArgs: [created.id],
+      );
+      expect(row.single['language'], 'dart');
 
-        final read = await repository.getById(1, created.id);
-        expect(read!.language, SnippetLanguage.dart);
-        expect(read.expectedOutput, 'hi');
-      },
-    );
+      final read = await repository.getById(1, created.id);
+      expect(read!.language, SnippetLanguage.dart);
+      expect(read.expectedOutput, 'hi');
+    });
 
     test('title триммится при сохранении', () async {
       final created = await repository.create(
@@ -125,7 +122,11 @@ void main() {
       expect(updated.language, SnippetLanguage.dart);
       expect(updated.code, 'int b;');
       expect(updated.expectedOutput, 'ok');
-      expect(updated.createdAt, created.createdAt, reason: 'created_at сохранён');
+      expect(
+        updated.createdAt,
+        created.createdAt,
+        reason: 'created_at сохранён',
+      );
       expect(
         updated.updatedAt.isAfter(oldUpdatedAt),
         isTrue,

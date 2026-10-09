@@ -39,9 +39,7 @@ class _PlaygroundScreenState extends State<PlaygroundScreen> {
     _draftProvider.addListener(_onDraftChanged);
     // Первый вход на вкладку при уже записанном черновике (переход
     // go('/playground') создаёт экран без notify): постфрейм-проверка.
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => _handleDraftIfNeeded(),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) => _handleDraftIfNeeded());
   }
 
   @override
@@ -85,9 +83,7 @@ class _PlaygroundScreenState extends State<PlaygroundScreen> {
         icon: const Icon(Icons.add),
         label: const Text('Создать'),
       ),
-      body: SafeArea(
-        child: _buildList(context, provider, scheme),
-      ),
+      body: SafeArea(child: _buildList(context, provider, scheme)),
     );
   }
 
@@ -103,7 +99,8 @@ class _PlaygroundScreenState extends State<PlaygroundScreen> {
         child: EmptyState(
           key: Key('playground-empty'),
           title: 'Сниппетов пока нет',
-          message: 'Нажмите «Создать», чтобы написать первый фрагмент кода, '
+          message:
+              'Нажмите «Создать», чтобы написать первый фрагмент кода, '
               'или откройте пример из статьи кнопкой «Открыть в песочнице».',
           icon: Icons.code,
         ),
@@ -117,7 +114,10 @@ class _PlaygroundScreenState extends State<PlaygroundScreen> {
         final snippet = provider.entries[index];
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
-          child: _SnippetCard(key: Key('snippet-card-${snippet.id}'), snippet: snippet),
+          child: _SnippetCard(
+            key: Key('snippet-card-${snippet.id}'),
+            snippet: snippet,
+          ),
         );
       },
     );
@@ -146,9 +146,7 @@ class _SnippetCard extends StatelessWidget {
       margin: EdgeInsets.zero,
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () => context.push(
-          AppConstants.snippetEditPath(snippet.id),
-        ),
+        onTap: () => context.push(AppConstants.snippetEditPath(snippet.id)),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Column(

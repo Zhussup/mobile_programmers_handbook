@@ -124,7 +124,10 @@ class ProfileScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           children: [
             // --- Карточка пользователя: аватар + имя/email/дата ---
+            // Отступ карточек — снаружи (SizedBox между секциями), margin у
+            // всех карточек нулевой (единый стиль с P6/P9/P10-экранами).
             Card(
+              margin: EdgeInsets.zero,
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Row(
@@ -223,6 +226,7 @@ class ProfileScreen extends StatelessWidget {
 
             // --- О приложении (критерий: основные сведения) ---
             Card(
+              margin: EdgeInsets.zero,
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -247,6 +251,7 @@ class ProfileScreen extends StatelessWidget {
 
             // --- Тема оформления (persist в prefs) ---
             Card(
+              margin: EdgeInsets.zero,
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(

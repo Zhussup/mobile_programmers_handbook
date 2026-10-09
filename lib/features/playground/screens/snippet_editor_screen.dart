@@ -61,6 +61,13 @@ class _SnippetEditorScreenState extends State<SnippetEditorScreen> {
   /// Сниппет режима редактирования не найден у текущего пользователя.
   bool _notFound = false;
 
+  /// Пользователь, СВОИМ сниппетом которого было предзаполнение (P13).
+  /// null — предзаполнения ещё не было: по нему экран отличает «эти данные
+  /// в форме — данные этого же пользователя» от «форме подставлены данные
+  /// другого сеанса» (редактор остаётся живым при смене пользователя —
+  /// переадресации при logout нет).
+  int? _prefilledUserId;
+
   /// Идёт сохранение/удаление (защита от двойного тапа).
   bool _submitting = false;
 
@@ -70,6 +77,34 @@ class _SnippetEditorScreenState extends State<SnippetEditorScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _initStep());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Режим создания не привязан к пользователю: черновик статейный
+    // (публичный контент).
+    if (_isCreateMode) return;
+    // Подписка (watch) на user-scoped провайдер: смена пользователя в сессии
+    // перезапускает его загрузку — каждый notify доходит сюда по подписке.
+    final provider = context.watch<SnippetProvider>();
+    if (!_initialised) return;
+    if (provider.currentUserId == _prefilledUserId) return;
+    // Пользователь сменился ПОСЛЕ предзаполнения: на экране могут остаться
+    // чужие данные. Сбрасываем форму и пересматриваем по НОВОМУ пользователю
+    // (тот же id в песочнице глобальный — у нового пользователя может быть
+    // свой сниппет с этим id, поэтому не «not found» сразу, а пересмотр).
+    setState(() {
+      _initialised = false;
+      _notFound = false;
+      _prefilledUserId = null;
+      _titleError = null;
+      _language = SnippetLanguage.cpp;
+      _codeController.text = '';
+      _titleController.text = '';
+      _outputController.text = '';
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) => _initStep());
   }
 
@@ -98,7 +133,7 @@ class _SnippetEditorScreenState extends State<SnippetEditorScreen> {
     final snippet = provider.snippetById(widget.snippetId!);
     if (snippet == null) {
       if (provider.loading) {
-        // Первая загрузка списка ещё идёт — попробовать позже.
+        // Первая загрузка списка ещё в полёте — попробовать позже.
         WidgetsBinding.instance.addPostFrameCallback((_) => _initStep());
         return;
       }
@@ -108,6 +143,9 @@ class _SnippetEditorScreenState extends State<SnippetEditorScreen> {
       });
       return;
     }
+    // Кто владелец предзаполненных данных: по нему didChangeDependencies
+    // определяет смену пользователя ПОСЛЕ предзаполнения.
+    _prefilledUserId = provider.currentUserId;
     setState(() => _prefill(snippet));
     _initialised = true;
   }
@@ -207,8 +245,10 @@ class _SnippetEditorScreenState extends State<SnippetEditorScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Удалить сниппет?'),
-        content: Text('«${_titleController.text.trim()}» будет удалён '
-            'безвозвратно. Прочие сниппеты не затрагиваются.'),
+        content: Text(
+          '«${_titleController.text.trim()}» будет удалён '
+          'безвозвратно. Прочие сниппеты не затрагиваются.',
+        ),
         actions: [
           TextButton(
             key: const Key('snippet-delete-cancel'),
@@ -227,9 +267,9 @@ class _SnippetEditorScreenState extends State<SnippetEditorScreen> {
     if (confirmed != true) return;
     if (!mounted) return;
     try {
-      final deleted = await context
-          .read<SnippetProvider>()
-          .delete(widget.snippetId!);
+      final deleted = await context.read<SnippetProvider>().delete(
+        widget.snippetId!,
+      );
       if (!mounted) return;
       if (!deleted) {
         showErrorSnackBar(context, 'Сниппет не найден');

@@ -64,6 +64,20 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Разбор файла построчно'), findsOneWidget);
+    // P10: под код-блоком появилась кнопка «Открыть в песочнице» → статья
+    // выше одной высоты экрана — прокрутить к код-блоку (SliverList строит
+    // детей области видимости + кэша).
+    await tester.scrollUntilVisible(
+      find.byType(CodeBlock),
+      200,
+      scrollable: find
+          .descendant(
+            of: find.byType(ArticleScreen),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    await tester.pumpAndSettle();
     expect(find.byType(CodeBlock), findsOneWidget);
     expect(find.text('Показать вывод'), findsOneWidget);
 
@@ -122,7 +136,18 @@ void main() {
     await harness.registerUser(tester);
     await openArticle(tester);
 
-    await tester.ensureVisible(find.byKey(const Key('code-copy')));
+    // P10: статья выше одной высоты экрана (кнопки песочницы) — прокрутка
+    // до кнопки копирования.
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('code-copy')),
+      200,
+      scrollable: find
+          .descendant(
+            of: find.byType(ArticleScreen),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('code-copy')));
     await tester.pump(const Duration(milliseconds: 300));
@@ -189,6 +214,9 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      // P10: сниппеты (user-scoped) загружаются при первом watch — реальная
+      // IO, иначе pending timer в конце теста.
+      await harness.settleRealIo(tester);
       expect(find.byKey(const Key('playground-empty')), findsOneWidget);
 
       // Профиль: имя и email пользователя в карточке.
@@ -199,6 +227,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await harness.settleRealIo(tester);
       expect(find.text('user1'), findsOneWidget);
       expect(find.text('user1@example.com'), findsOneWidget);
 
@@ -222,4 +251,35 @@ void main() {
     expect(find.byType(ArticleScreen), findsNothing);
     expect(find.widgetWithText(AppBar, 'Авторизация'), findsOneWidget);
   });
+
+  testWidgets(
+    'AppBar справочника: иконка поиска → экран /Поиск/, иконка избранного → /Избранное/',
+    timeout: t,
+    (tester) async {
+      // Критерий «навигация без ошибок»: иконки AppBar доступны и ведут на
+      // свои экраны (проверка «скрытых» маршрутов P8/P9).
+      await harness.registerUser(tester);
+      await harness.pumpApp(
+        tester,
+        initialLocation: AppConstants.routeReference,
+      );
+      await tester.pumpAndSettle();
+
+      // Иконка поиска в AppBar → экран поиска (AppBar «Поиск»).
+      await tester.tap(find.byKey(const Key('reference-open-search')));
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(AppBar, 'Поиск'), findsOneWidget);
+
+      // Назад к категориям, затем иконка избранного в AppBar.
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('reference-open-favorites')));
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(AppBar, 'Избранное'), findsOneWidget);
+      // Пустое избранное — единый EmptyState (не пустая белая страница).
+      expect(find.byKey(const Key('favorites-empty')), findsOneWidget);
+      // Нижняя навигация остаётся (ветка «Справочник»).
+      expect(find.byType(NavigationBar), findsOneWidget);
+    },
+  );
 }

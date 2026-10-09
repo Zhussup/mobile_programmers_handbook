@@ -7,7 +7,6 @@ import 'package:mob_kurs/features/playground/snippet_model.dart';
 import 'package:mob_kurs/features/playground/snippet_provider.dart';
 import 'package:mob_kurs/features/playground/snippet_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 /// Юнит-тесты провайдера сниппетов (P10): user-scoping (смена пользователя →
@@ -84,37 +83,34 @@ void main() {
       expect(notified, 0, reason: 'гостевая запись ничего не меняла');
     });
 
-    test(
-      'смена пользователя: провайдер сам перечитывает данные нового '
-      '(слушатель сессии), а не держит чужое',
-      () async {
-        final first = await register('first');
-        await provider.create(
-          title: 'Только моё',
-          language: SnippetLanguage.cpp,
-          code: 'int a;',
-        );
-        expect(provider.entries.single.title, 'Только моё');
+    test('смена пользователя: провайдер сам перечитывает данные нового '
+        '(слушатель сессии), а не держит чужое', () async {
+      final first = await register('first');
+      await provider.create(
+        title: 'Только моё',
+        language: SnippetLanguage.cpp,
+        code: 'int a;',
+      );
+      expect(provider.entries.single.title, 'Только моё');
 
-        // Выход: авто-reload по notify сессии → состояние очищается.
-        await session.logout();
-        await Future<void>.delayed(const Duration(milliseconds: 10));
-        expect(provider.currentUserId, isNull);
-        expect(provider.entries, isEmpty);
+      // Выход: авто-reload по notify сессии → состояние очищается.
+      await session.logout();
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      expect(provider.currentUserId, isNull);
+      expect(provider.entries, isEmpty);
 
-        // Второй пользователь: список его собственный (пусто у нового юзера).
-        final second = await register('second');
-        expect(second.id, isNot(first.id));
-        expect(provider.currentUserId, second.id);
-        expect(provider.entries, isEmpty);
+      // Второй пользователь: список его собственный (пусто у нового юзера).
+      final second = await register('second');
+      expect(second.id, isNot(first.id));
+      expect(provider.currentUserId, second.id);
+      expect(provider.entries, isEmpty);
 
-        // Возврат первого: данные вернулись из БД под его user_id.
-        await session.login(loginOrEmail: 'first', password: 'пароль123');
-        await Future<void>.delayed(const Duration(milliseconds: 10));
-        expect(provider.currentUserId, first.id);
-        expect(provider.entries.single.title, 'Только моё');
-      },
-    );
+      // Возврат первого: данные вернулись из БД под его user_id.
+      await session.login(loginOrEmail: 'first', password: 'пароль123');
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      expect(provider.currentUserId, first.id);
+      expect(provider.entries.single.title, 'Только моё');
+    });
 
     test('loading-флаг: true до первой загрузки, false после неё', () async {
       expect(provider.loading, isTrue);
@@ -140,48 +136,50 @@ void main() {
       expect(notified, 1, reason: 'одна вставка — одно уведомление');
     });
 
-    test('update: изменённые поля в списке, уведомление, наверх списка',
-        () async {
-      await register('u1');
-      final first =
-          (await provider.create(
-                title: 'Старый',
-                language: SnippetLanguage.cpp,
-                code: 'int a;',
-              ))!;
-      await Future<void>.delayed(const Duration(milliseconds: 15));
-      // Второй сниппет свежее первого (первым в списке).
-      final second =
-          (await provider.create(
-                title: 'Второй',
-                language: SnippetLanguage.cpp,
-                code: 'int b;',
-              ))!;
-      expect(provider.entries.map((s) => s.id).toList(), [second.id, first.id]);
+    test(
+      'update: изменённые поля в списке, уведомление, наверх списка',
+      () async {
+        await register('u1');
+        final first = (await provider.create(
+          title: 'Старый',
+          language: SnippetLanguage.cpp,
+          code: 'int a;',
+        ))!;
+        await Future<void>.delayed(const Duration(milliseconds: 15));
+        // Второй сниппет свежее первого (первым в списке).
+        final second = (await provider.create(
+          title: 'Второй',
+          language: SnippetLanguage.cpp,
+          code: 'int b;',
+        ))!;
+        expect(provider.entries.map((s) => s.id).toList(), [
+          second.id,
+          first.id,
+        ]);
 
-      var notified = 0;
-      provider.addListener(() => notified++);
-      final updated = await provider.update(
-        first!,
-        title: 'Переписанный',
-        language: SnippetLanguage.dart,
-        code: 'int c;',
-      );
-      expect(updated, isNotNull);
-      expect(provider.entries.first.id, updated!.id);
-      expect(provider.snippetById(first.id)!.title, 'Переписанный');
-      expect(provider.snippetById(first.id)!.language, SnippetLanguage.dart);
-      expect(notified, 1);
-    });
+        var notified = 0;
+        provider.addListener(() => notified++);
+        final updated = await provider.update(
+          first,
+          title: 'Переписанный',
+          language: SnippetLanguage.dart,
+          code: 'int c;',
+        );
+        expect(updated, isNotNull);
+        expect(provider.entries.first.id, updated!.id);
+        expect(provider.snippetById(first.id)!.title, 'Переписанный');
+        expect(provider.snippetById(first.id)!.language, SnippetLanguage.dart);
+        expect(notified, 1);
+      },
+    );
 
     test('транзакция update — null для чужого/несуществующего id', () async {
       final u1 = await register('first');
-      final first =
-          (await provider.create(
-                title: 'Свой',
-                language: SnippetLanguage.cpp,
-                code: 'int a;',
-              ))!;
+      final first = (await provider.create(
+        title: 'Свой',
+        language: SnippetLanguage.cpp,
+        code: 'int a;',
+      ))!;
 
       // Второй пользователь пытается обновить чужой сниппет по id.
       await session.logout();
@@ -214,11 +212,11 @@ void main() {
       final u1 = await register('first');
       final created =
           await provider.create(
-                title: 'Свой',
-                language: SnippetLanguage.cpp,
-                code: 'a',
-              ) ??
-              fail('create вернул null');
+            title: 'Свой',
+            language: SnippetLanguage.cpp,
+            code: 'a',
+          ) ??
+          fail('create вернул null');
 
       var notified = 0;
       provider.addListener(() => notified++);
