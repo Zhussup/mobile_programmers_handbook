@@ -4,13 +4,20 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite/sqflite.dart' show Database;
 
 import 'core/constants/app_constants.dart';
+import 'core/db/app_database.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/session_provider.dart';
 import 'features/profile/theme_provider.dart';
 import 'features/reference/article_repository.dart';
+import 'features/reference/favorites_provider.dart';
+import 'features/reference/favorites_repository.dart';
+import 'features/reference/history_provider.dart';
+import 'features/reference/history_repository.dart';
 import 'features/reference/reference_provider.dart';
+import 'features/search/search_provider.dart';
 import 'router/app_router.dart';
 
 /// Корневой виджет приложения.
@@ -27,6 +34,7 @@ class MobKursApp extends StatefulWidget {
     required this.session,
     this.initialLocation,
     this.referenceRepository,
+    this.database,
   });
 
   /// Общий экземпляр SharedPreferences (загружен один раз в main()).
@@ -48,6 +56,12 @@ class MobKursApp extends StatefulWidget {
   /// ([ArticleRepository.fromRaw]) — rootBundle IO недоступен в fake-async.
   final ArticleRepository? referenceRepository;
 
+  /// БД пользовательских данных (favorites/history — P9).
+  ///
+  /// Production: null → AppDatabase.instance (открыта в main() до runApp,
+  /// подводный камень №3). В тестах каркас передаёт свою in-memory базу.
+  final Database? database;
+
   @override
   State<MobKursApp> createState() => _MobKursAppState();
 }
@@ -59,6 +73,13 @@ class _MobKursAppState extends State<MobKursApp> {
     widget.session,
     initialLocation: widget.initialLocation,
   );
+
+  /// Репозиторий справочника: тестовый (fromRaw) или production (ассеты).
+  late final ArticleRepository referenceRepository =
+      widget.referenceRepository ?? ArticleRepository();
+
+  /// БД пользовательских данных (в тестах — in-memory база каркаса).
+  late final Database userDb = widget.database ?? AppDatabase.instance.db;
 
   @override
   Widget build(BuildContext context) {
@@ -76,11 +97,36 @@ class _MobKursAppState extends State<MobKursApp> {
         // Тесты дают здесь готовый repository (уже разобранный fromRaw).
         ChangeNotifierProvider<ReferenceProvider>(
           create: (_) {
-            final provider = ReferenceProvider(
-              repository:
-                  widget.referenceRepository ?? ArticleRepository(),
-            );
+            final provider = ReferenceProvider(repository: referenceRepository);
             unawaited(provider.load());
+            return provider;
+          },
+        ),
+        // P8: поиск (content-scoped — не зависит от сессии).
+        ChangeNotifierProvider<SearchProvider>(
+          create: (_) => SearchProvider(referenceRepository),
+        ),
+        // P9: избранное и история (user-scoped — слушают SessionProvider).
+        // Начальная загрузка — при первом обращении любого экрана.
+        ChangeNotifierProvider<FavoritesProvider>(
+          create: (_) {
+            final provider = FavoritesProvider(
+              articles: referenceRepository,
+              repository: FavoritesRepository(db: userDb),
+              session: widget.session,
+            );
+            unawaited(provider.reload());
+            return provider;
+          },
+        ),
+        ChangeNotifierProvider<HistoryProvider>(
+          create: (_) {
+            final provider = HistoryProvider(
+              articles: referenceRepository,
+              repository: HistoryRepository(db: userDb),
+              session: widget.session,
+            );
+            unawaited(provider.reload());
             return provider;
           },
         ),

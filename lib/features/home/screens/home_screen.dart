@@ -6,15 +6,15 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../auth/session_provider.dart';
 import '../../reference/article_model.dart';
+import '../../reference/history_provider.dart';
 import '../../reference/reference_provider.dart';
 import '../../reference/widgets/category_card.dart';
 
-/// Главный экран (вкладка «Главная», P5).
+/// Главный экран (вкладка «Главная», P5, дополнен P8/P9).
 ///
-/// Приветствие по имени, карточки категорий справочника (данные из
-/// ReferenceProvider) с переходом на `/reference/<categoryId>`; секция
-/// «Продолжить» рендерится ТОЛЬКО при непустой истории (сейчас скрыта,
-/// P9 оживит через HistoryProvider).
+/// Приветствие по имени, карточки категорий справочника с переходом на
+/// `/reference/<categoryId>`, секция «Продолжить» (P9): недавние статьи из
+/// [HistoryProvider] — рендерится ТОЛЬКО при непустой истории.
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -22,17 +22,34 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final session = context.watch<SessionProvider>();
     final reference = context.watch<ReferenceProvider>();
+    final history = context.watch<HistoryProvider>();
     final user = session.currentUser;
     final theme = Theme.of(context);
 
-    // «Продолжить» (P9): секция рендерится только при непустой истории.
-    // История появится в P9 (HistoryProvider), сейчас блок всегда скрыт.
-    final recent = <Article>[];
+    // «Продолжить» (P9): недавние статьи топ-20 истории; секция скрыта,
+    // пока истории нет (критично для виджет-теста «без истории — скрыта»).
+    final recent = history.recent(count: AppConstants.homeRecentLimit);
 
     final greeting = user != null ? 'Привет, ${user.username}!' : 'Привет!';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Главная')),
+      appBar: AppBar(
+        title: const Text('Главная'),
+        actions: [
+          IconButton(
+            key: const Key('home-open-search'),
+            tooltip: 'Поиск',
+            onPressed: () => context.push(AppConstants.routeSearch),
+            icon: const Icon(Icons.search),
+          ),
+          IconButton(
+            key: const Key('home-open-history'),
+            tooltip: 'История',
+            onPressed: () => context.push(AppConstants.routeHistory),
+            icon: const Icon(Icons.history),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
@@ -74,10 +91,13 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              for (final article in recent)
+              for (final entry in recent)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 10),
-                  child: _RecentCard(article: article),
+                  child: _RecentCard(
+                    key: Key('home-recent-${entry.article.id}'),
+                    article: entry.article,
+                  ),
                 ),
             ],
           ],
@@ -131,10 +151,10 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-/// Плейсхолдер-карточка «Продолжить» (P9): список истории оживит фаза P9 —
-/// сейчас секция скрыта (recent пуст), виджет остаётся на будущее.
+/// Карточка «Продолжить» (P9, оживила HistoryProvider): переход на статью
+/// по id из истории (данные — из провайдера, не из маршрута).
 class _RecentCard extends StatelessWidget {
-  const _RecentCard({required this.article});
+  const _RecentCard({super.key, required this.article});
 
   final Article article;
 
@@ -187,6 +207,12 @@ class _RecentCard extends StatelessWidget {
                     ),
                   ],
                 ),
+              ),
+              const SizedBox(width: 4),
+              Icon(
+                Icons.chevron_right,
+                size: 22,
+                color: scheme.onSurfaceVariant,
               ),
             ],
           ),

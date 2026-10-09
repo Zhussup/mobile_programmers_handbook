@@ -1,0 +1,364 @@
+{
+  "category": {
+    "id": "oop",
+    "title": "ООП",
+    "icon": "memory",
+    "description": "Объектно-ориентированное программирование на C++: классы, инкапсуляция, наследование, полиморфизм и перегрузка операторов."
+  },
+  "articles": [
+    {
+      "id": "cpp_oop_class",
+      "title": "Классы и объекты",
+      "summary": "Класс — чертёж сущности, объект — экземпляр: поля, методы, секции public, вызов метода через точку.",
+      "difficulty": "beginner",
+      "tags": [
+        "cpp",
+        "ооп",
+        "классы",
+        "объекты"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Класс — чертёж: он описывает, какие данные хранит сущность (поля) и что умеет делать (методы). Объект — экземпляр чертежа: Employee worker создаёт конкретного сотрудника. Один класс — сколько угодно объектов, и у каждого свои значения полей; методы общие для всех. Подход struct из «Структур данных» — простейший класс: только поля."
+        },
+        {
+          "type": "heading",
+          "text": "Состав класса"
+        },
+        {
+          "type": "list",
+          "items": [
+            "public: — секция, доступная всем; у class она по умолчанию закрыта, у struct открыта",
+            "Поля — данные объекта: name, salary",
+            "Методы — операции над данными: yearlyPay(), promote(raise)",
+            "Вызов через точку: worker.promote(300.0) — как вызов поля-функции",
+            "const в конце метода — обещание «объект не меняю»"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <string>\n\nclass Employee {\npublic:\n    std::string name;\n    double salary;\n\n    double yearlyPay() const {\n        return salary * 12;\n    }\n\n    void promote(double raise) {\n        salary += raise;\n    }\n};\n\nint main() {\n    Employee worker;\n    worker.name = \"Anna\";\n    worker.salary = 1500.0;\n\n    worker.promote(300.0);\n    std::cout << worker.name << \" earns \"\n              << worker.yearlyPay() << \" per year\" << std::endl;\n    return 0;\n}",
+          "output": "Anna earns 21600 per year",
+          "caption": "Метод читает СВОИ поля: yearlyPay() работает с salary того объекта, у кого вызван"
+        },
+        {
+          "type": "note",
+          "text": "Обращение с объектом — почти как со встроенной переменной: копирование Employee копирует поля, передача в функцию — по правилам значений и ссылок. У класса может быть сколько угодно объектов — у каждого свои поля и свой вызов методов. Точка с запятой после закрывающей фигурной скобки класса обязательна."
+        }
+      ]
+    },
+    {
+      "id": "cpp_oop_encapsulation",
+      "title": "Инкапсуляция: private и геттеры",
+      "summary": "Сокрытие полей в private и управляемый доступ через методы: валидация в сеттере, const-геттер.",
+      "difficulty": "beginner",
+      "tags": [
+        "cpp",
+        "ооп",
+        "инкапсуляция",
+        "private",
+        "геттеры"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Инкапсуляция — принцип «данные объекта закрыты, операции открыты». Секция private недоступна извне: написать acc.balance из main нельзя — ни прочитать, ни изменить. Всё взаимодействие идёт через методы: они могут проверять аргументы (не принять отрицательный взнос) и держать класс в корректном состоянии."
+        },
+        {
+          "type": "heading",
+          "text": "Что даёт private"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Баг не испортит данные «мимо» класса: менять можно только разрешёнными методами",
+            "Валидация: deposit не примет минус, проверка на пустое имя в setOwner",
+            "Геттер — метод чтения getBalance(); сеттер — метод записи setOwner()",
+            "const в конце геттера: метод не меняет объект и вызывается и на const-объекте",
+            "protected — доступ классу и наследникам (об этом — статья «Наследование»)"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <string>\n\nclass Account {\nprivate:                 // inaccessible from outside\n    std::string owner = \"Bob\";\n    int balance = 0;\n\npublic:\n    void deposit(int amount) {\n        if (amount > 0) {\n            balance += amount;   // invariant: no negative deposits\n        }\n    }\n\n    int getBalance() const {\n        return balance;\n    }\n\n    void setOwner(const std::string& name) {\n        owner = name;\n    }\n\n    std::string getOwner() const {\n        return owner;\n    }\n};\n\nint main() {\n    Account acc;\n    std::cout << acc.getOwner() << \" has \" << acc.getBalance() << std::endl;\n\n    acc.setOwner(\"Alice\");\n    acc.deposit(100);\n    acc.deposit(-5);                     // rejected by the check\n    std::cout << \"now: \" << acc.getBalance() << std::endl;\n\n    // std::cout << acc.balance;         // error: balance is private\n    return 0;\n}",
+          "output": "Bob has 0\nnow: 100",
+          "caption": "Поля закрыты; вход через deposit, который отводит отрицательный взнос (-5 не изменил баланс)"
+        },
+        {
+          "type": "note",
+          "text": "Не пишите «тупые» геттеры и сеттеры на каждое поле: если правил для поля нет, честнее оставить его открытым (или взять struct). Инкапсуляция окупается, когда есть инвариант — условие, которое никто снаружи не должен суметь нарушить (баланс не ниже нуля, возраст не бывает отрицательным)."
+        }
+      ]
+    },
+    {
+      "id": "cpp_oop_ctor_dtor",
+      "title": "Конструкторы и деструктор",
+      "summary": "Инициализация объекта: конструктор по умолчанию и параметрический, список инициализации, деструктор и порядок разрушения.",
+      "difficulty": "intermediate",
+      "tags": [
+        "cpp",
+        "ооп",
+        "конструктор",
+        "деструктор"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Конструктор — метод с именем класса и без типа возврата: вызывается автоматически при создании объекта и обязан привести поля в корректное состояние. Конструкторов может быть несколько (перегрузка) — по числу вариантов инициализации. Деструктор ~Имя() — тоже автоматический: срабатывает при разрушении объекта, там освобождают ресурсы (файлы, память)."
+        },
+        {
+          "type": "heading",
+          "text": "Список инициализации"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Point() — конструктор по умолчанию: без параметров",
+            "Point(int px, int py) : x(px), y(py) — список инициализации: поля инициализируются значениями сразу",
+            "Деструктор ~Point() — без параметров и возвращаемого типа; может быть один",
+            "Разрушение — в ОБРАТНОМ порядке создания: последний создан — первым умер",
+            "Автоматический вызов: и при выходе из области видимости, и при закрытии блока/функции"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n\nclass Point {\nprivate:\n    int x;\n    int y;\n\npublic:\n    // Default constructor: member list x(0), y(0)\n    Point() : x(0), y(0) {\n        std::cout << \"default ctor\" << std::endl;\n    }\n\n    // Parameterized: initializes fields directly from arguments\n    Point(int px, int py) : x(px), y(py) {}\n\n    ~Point() {\n        std::cout << \"destroy \" << x << ',' << y << std::endl;\n    }\n\n    void show() const {\n        std::cout << '(' << x << ',' << y << ')' << std::endl;\n    }\n};\n\nint main() {\n    Point a;          // default ctor\n    Point b(3, 4);    // parameterized ctor\n\n    a.show();\n    b.show();\n    return 0;         // destructors run in reverse order: b, then a\n}",
+          "output": "default ctor\n(0,0)\n(3,4)\ndestroy 3,4\ndestroy 0,0",
+          "caption": "Два конструктора на выбор; деструктор срабатывает сам, сперва у последнего созданного объекта"
+        },
+        {
+          "type": "note",
+          "text": "Список инициализации предпочтительнее присваивания в теле: так инициализируются константные поля и ссылки (иначе их инициализировать НЕВОЗМОЖНО). Класс без ни одного конструктора компилятор наделяет пустым конструктором по умолчанию, но стоит вам написать параметрический — конструктор по умолчанию исчезает, и Point a; перестанет собираться: возвращайте его явно. Класс с «сырым» указателем на new обязан освобождать его в деструкторе, иначе утечка."
+        }
+      ]
+    },
+    {
+      "id": "cpp_oop_inheritance",
+      "title": "Наследование",
+      "summary": "class Manager : public Employee: унаследованные методы, protected для наследников, вызов конструктора базы.",
+      "difficulty": "intermediate",
+      "tags": [
+        "cpp",
+        "ооп",
+        "наследование",
+        "protected"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Наследование — механизм «производный класс берёт всё у базового и добавляет своё»: отношение «является» (Manager — это Employee). Базовый класс описывает общее, наследник — специфику. Секция protected — «между private и public»: доступен классу и наследникам, но не постороннему коду — граница между «своими» и «чужими» не по классу, а по всей иерархии."
+        },
+        {
+          "type": "heading",
+          "text": "Механика наследования"
+        },
+        {
+          "type": "list",
+          "items": [
+            "class Manager : public Employee — публичное наследование (норма)",
+            "Конструктор базы вызывается из списка инициализации: : Employee(n, s), reports(r)",
+            "Объект Manager содержит Employee-«часть»: show() работает и у наследника",
+            "protected: поля доступны классу и наследникам, но не остальному коду",
+            "Разрушение — в обратном порядке: сначала деструктор наследника, потом базы"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <string>\n\nclass Employee {\nprotected:              // visible to derived classes too\n    std::string name;\n    double salary;\n\npublic:\n    Employee(const std::string& n, double s) : name(n), salary(s) {}\n\n    void show() const {\n        std::cout << name << \": \" << salary << std::endl;\n    }\n};\n\nclass Manager : public Employee {\nprivate:\n    int reports;\n\npublic:\n    // Base constructor called in the init list\n    Manager(const std::string& n, double s, int r)\n        : Employee(n, s), reports(r) {}\n\n    void teamInfo() const {\n        std::cout << name << \" manages \" << reports << std::endl;\n    }\n};\n\nint main() {\n    Manager boss(\"Anna\", 2000.0, 5);\n    boss.show();        // inherited method\n    boss.teamInfo();    // own method\n    return 0;\n}",
+          "output": "Anna: 2000\nAnna manages 5",
+          "caption": "show() унаследован от Employee и работает у Manager; protected-поле name читает метод наследника"
+        },
+        {
+          "type": "note",
+          "text": "Наследование — про «является», а не «имеет»: если у Manager внутри есть команда — это поле, а не родство классов. Наследник не видит private-поля базового класса напрямую — только через его методы; поэтому поле name сделано protected, а не private. Конструктор базы обязателен: у Employee нет конструктора по умолчанию, и наследник обязан вызвать параметрический."
+        }
+      ]
+    },
+    {
+      "id": "cpp_oop_polymorphism",
+      "title": "Полиморфизм: virtual и override",
+      "summary": "Виртуальные методы: вызов через указатель на базу выбирает версию наследника в рантайме; override и virtual-деструктор.",
+      "difficulty": "advanced",
+      "tags": [
+        "cpp",
+        "ооп",
+        "полиморфизм",
+        "virtual",
+        "override"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Полиморфизм — «один интерфейс, разные реализации»: у Circle и Rect метод area() считает по-своему. Работает это через указатель или ссылку на базовый класс: во время компиляции неизвестно, что там лежит, поэтому решение принимается В РАБОТЕ — слово virtual создаёт таблицу виртуальных методов (vtable) и делает вызовы динамически связанными. override в наследнике говорит компилятору «я переопределяю» — и он проверит, что сигнатура совпала."
+        },
+        {
+          "type": "heading",
+          "text": "Как это устроено"
+        },
+        {
+          "type": "list",
+          "items": [
+            "virtual double area() const — базовый метод, разрешающий переопределение",
+            "double area() const override — наследник переопределяет и помечает",
+            "Shape* p = &c; p->area() — вызовется версия Circle (а не базы)",
+            "vector<Shape*> — коллекция РАЗНЫХ типов под одним интерфейсом",
+            "virtual ~Shape() — деструктор базы тоже виртуален: иначе delete через Shape* некорректен"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <vector>\n\nclass Shape {\npublic:\n    virtual double area() const {\n        return 0.0;\n    }\n\n    virtual ~Shape() {}\n};\n\nclass Circle : public Shape {\nprivate:\n    double r;\n\npublic:\n    explicit Circle(double radius) : r(radius) {}\n\n    double area() const override {\n        return 3.14 * r * r;\n    }\n};\n\nclass Rect : public Shape {\nprivate:\n    double w;\n    double h;\n\npublic:\n    Rect(double width, double height) : w(width), h(height) {}\n\n    double area() const override {\n        return w * h;\n    }\n};\n\nint main() {\n    Circle c(1.0);\n    Rect r(2.0, 3.0);\n\n    std::vector<const Shape*> shapes = {&c, &r};\n    double total = 0;\n    for (const Shape* s : shapes) {\n        total += s->area();      // resolved at runtime\n    }\n    std::cout << \"total: \" << total << std::endl;\n    std::cout << c.area() << ' ' << r.area() << std::endl;\n    return 0;\n}",
+          "output": "total: 9.14\n3.14 6",
+          "caption": "Единая строка s->area() вызывает РАЗНЫЕ методы: выбор версии — по реальному типу объекта, не по типу указателя"
+        },
+        {
+          "type": "note",
+          "text": "Достаточно одного virtual в базе: наследнику хватает override. Без virtual вызов решается по типу УКАЗАТЕЛЯ и всегда давал бы 0 (base area) — классическая ошибка новичков. Цена виртуальности — таблица vtable и косвенный вызов; в учебном коде она незаметна."
+        }
+      ]
+    },
+    {
+      "id": "cpp_oop_abstract",
+      "title": "Абстрактные классы",
+      "summary": "Чисто виртуальный метод (= 0): класс становится абстрактным, экземпляр создать нельзя, наследники обязаны реализовать.",
+      "difficulty": "intermediate",
+      "tags": [
+        "cpp",
+        "ооп",
+        "абстрактный класс",
+        "чистая виртуальная",
+        "интерфейс"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Чисто виртуальный метод — объявление virtual тип имя() = 0; : у метода нет тела, потому что базовый класс не знает, КАК его исполнить, — но требует, чтобы умели все наследники. Класс хотя бы с одним таким методом — абстрактный: создать его объект нельзя; он работает как «контракт + общие данные»."
+        },
+        {
+          "type": "heading",
+          "text": "Правила"
+        },
+        {
+          "type": "list",
+          "items": [
+            "= 0 в конце объявления — чисто виртуальный метод",
+            "Наследник обязан переопределить ВСЕ чистые методы, иначе сам останется абстрактным",
+            "Создать объект абстрактного класса — ошибка на этапе компиляции",
+            "НО: указатель и ссылка на абстрактный класс законны — они держат наследников",
+            "Класс с одними только чистыми методами называют интерфейсом"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <string>\n\nclass Command {           // contract: what a command can do\npublic:\n    virtual std::string name() const = 0;\n    virtual void execute() const = 0;\n\n    virtual ~Command() {}\n};\n\nclass PrintCommand : public Command {\npublic:\n    std::string name() const override {\n        return \"print\";\n    }\n\n    void execute() const override {\n        std::cout << \"printing doc\" << std::endl;\n    }\n};\n\nclass SaveCommand : public Command {\npublic:\n    std::string name() const override {\n        return \"save\";\n    }\n\n    void execute() const override {\n        std::cout << \"saving doc\" << std::endl;\n    }\n};\n\nint main() {\n    PrintCommand printCmd;\n    SaveCommand saveCmd;\n    // Command c;         // error: Command is abstract\n\n    const Command* cmds[] = {&printCmd, &saveCmd};\n    for (const Command* c : cmds) {\n        std::cout << c->name() << \": \";\n        c->execute();\n    }\n    return 0;\n}",
+          "output": "print: printing doc\nsave: saving doc",
+          "caption": "Command — контракт без тела; оба наследника реализовали name и execute, массив команд полиморфен"
+        },
+        {
+          "type": "note",
+          "text": "Не путайте: у абстрактного класса может быть много обычных методов с телом — чисто виртуальными делают только те, что без данных наследника исполнить нельзя. Виртуальный деструктор здесь обязателен: наследников будут удалять через базовый указатель. Ромбовидное наследование (две ветки ведут к одной базе) требует виртуального наследования — тема отдельного изучения."
+        }
+      ]
+    },
+    {
+      "id": "cpp_oop_operators",
+      "title": "Перегрузка операторов",
+      "summary": "operator+ и operator== как методы класса, operator<< как свободная функция: правила приличия и границы.",
+      "difficulty": "advanced",
+      "tags": [
+        "cpp",
+        "ооп",
+        "перегрузка операторов",
+        "operator"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Перегрузка операторов даёт уже знакомым операциям новые типы: + для векторов складывает покомпонентно, == сравнивает поля. Оператор определяют как МЕТОД класса (когда слева стоит объект этого класса) или СВОБОДНУЮ функцию (когда слева не объект класса — например, поток cout при operator<<)."
+        },
+        {
+          "type": "heading",
+          "text": "Правила"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Vector2 c = a + b; — вызовется a.operator+(b)",
+            "Метод констант: Vector2 operator+(const Vector2& other) const",
+            "== возвращает bool; + возвращает НОВЫЙ объект (не менять ни a, ни b)",
+            "operator<< — свободная функция с двумя параметрами: ostream& и const Vector2&",
+            "operator<< возвращает ostream& — работает цепочка cout << a << endl"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n\nclass Vector2 {\npublic:\n    double x;\n    double y;\n\n    Vector2(double px = 0.0, double py = 0.0) : x(px), y(py) {}\n\n    // Operator as a member function\n    Vector2 operator+(const Vector2& other) const {\n        return Vector2(x + other.x, y + other.y);\n    }\n\n    bool operator==(const Vector2& other) const {\n        return x == other.x && y == other.y;\n    }\n};\n\nint main() {\n    Vector2 a(1, 2);\n    Vector2 b(3, 4);\n\n    Vector2 c = a + b;\n    std::cout << c.x << ' ' << c.y << std::endl;\n\n    std::cout << (a == Vector2(1, 2)) << ' ' << (a == b) << std::endl;\n    return 0;\n}",
+          "output": "4 6\n1 0",
+          "caption": "+ складывает покомпонентно и возвращает новый объект (a и b не изменились); == сравнивает поля"
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n\nclass Vector2 {\npublic:\n    double x;\n    double y;\n\n    Vector2(double px = 0.0, double py = 0.0) : x(px), y(py) {}\n};\n\n// Free function: the left operand is the stream, not this object\nstd::ostream& operator<<(std::ostream& out, const Vector2& v) {\n    out << v.x << ',' << v.y;\n    return out;\n}\n\nint main() {\n    Vector2 a(2, 5);\n    std::cout << a << std::endl;\n    std::cout << Vector2(0, 0) << std::endl;\n    return 0;\n}",
+          "output": "2,5\n0,0",
+          "caption": "operator<< как свободная функция: слева — поток cout, поэтому метод класса здесь не сработает"
+        },
+        {
+          "type": "note",
+          "text": "Перегружайте оператор только там, где смысл очевиден: + для геометрического вектора — да, + для «отправить письмо» — нет. Присваивание и адрес объекта «&» перегрузка не отменяет: приоритеты операций остаются прежними. В C++20 компаратору достаточно operator<=> (spaceship): ==, != и сравнения выводятся из него."
+        }
+      ]
+    },
+    {
+      "id": "cpp_oop_static_this",
+      "title": "this и статические члены",
+      "summary": "Статические поля и методы класса: одна копия на все объекты; скрытый параметр this и const-методы.",
+      "difficulty": "intermediate",
+      "tags": [
+        "cpp",
+        "ооп",
+        "static",
+        "this"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Статические члены принадлежат КЛАССУ, а не отдельному объекту: static поле — одно общее на все экземпляры, статический метод вызывается без создания объекта: Counter::total(). Обычный метод ходит через скрытый параметр this — указатель на самого себя: name внутри метода расшифровывается как this->name; поэтому у двух объектов один и тот же метод работает с разными полями."
+        },
+        {
+          "type": "heading",
+          "text": "Итого"
+        },
+        {
+          "type": "list",
+          "items": [
+            "static int totalCreated — ОДНО поле на весь класс",
+            "Определение вне класса: int Counter::totalCreated = 0;",
+            "static int total() — метод без this: обычные поля объекта ему недоступны",
+            "Вызов: Counter::total() — без объекта; через объект obj.total() — допустимо, но дурной тон",
+            "this — указатель на сам объект: return *this вернёт «себя» (цепочки вызовов)"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <string>\n\nclass Counter {\nprivate:\n    std::string name;\n    int value;\n    static int totalCreated;   // one copy for ALL objects\n\npublic:\n    Counter(const std::string& n) : name(n), value(0) {\n        ++totalCreated;\n    }\n\n    void increment() {\n        ++value;               // same as this->value\n    }\n\n    void show() const {\n        std::cout << name << '=' << value << std::endl;\n    }\n\n    static int total() {       // no `this`: class-level query\n        return totalCreated;\n    }\n};\n\nint Counter::totalCreated = 0;   // static member definition\n\nint main() {\n    Counter a(\"a\");\n    Counter b(\"b\");\n\n    a.increment();\n    a.increment();\n    b.increment();\n\n    a.show();\n    b.show();\n    std::cout << \"created: \" << Counter::total() << std::endl;\n    return 0;\n}",
+          "output": "a=2\nb=1\ncreated: 2",
+          "caption": "Поля value у объектов различаются, а totalCreated общий: создано 2 объекта, счётчик виден всем"
+        },
+        {
+          "type": "note",
+          "text": "У статического метода нет this, поэтому он не может обращаться к обычным полям объекта — только к статическим же членам и глобальным данным. Статические поля объявляют классовые константы, счётчики и общие данные; объявлять их надо и определять вне класса (в C++17 — inline static прямо в классе). const-метод имеет this типа const Counter* — поэтому менять поля ему запрещено."
+        }
+      ]
+    }
+  ]
+}

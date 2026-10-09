@@ -220,6 +220,142 @@
           "text": "Разыменовывать нулевой указатель (*p при p == nullptr) нельзя — это аварийное завершение. Правило текущего стиля: там, где «ничего не указано» не бывает, берите ссылки; указатели оставляйте для опциональных данных и внутренних структур (списки, деревья)."
         }
       ]
+    },
+    {
+      "id": "cpp_ds_pair_tuple",
+      "title": "Пара: std::pair и std::tuple",
+      "summary": "Два-три значения одним объектом: pair с first/second, tuple и get, возврат пары из функции и structured bindings (C++17).",
+      "difficulty": "intermediate",
+      "tags": [
+        "cpp",
+        "пара",
+        "tuple",
+        "utility"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "std::pair из <utility> кладёт два значения в один объект — поля first и second. Нужен, когда единственным объектом описывается связанное: частное и остаток, ключ и значение, имя и число. std::vector<pair<...>> — вместо параллельных массивов. std::tuple из <tuple> — та же идея на произвольное число значений; элементы достаются по номеру std::get<N>."
+        },
+        {
+          "type": "heading",
+          "text": "Синтаксис"
+        },
+        {
+          "type": "list",
+          "items": [
+            "std::pair<std::string, int> p = {\"Bread\", 42}; — создание",
+            "p.first, p.second — доступ к элементам",
+            "std::make_pair(7, \"days\") — конструктор с выводом типов по аргументам",
+            "std::tuple<std::string, int, double> t = {...}; std::get<0>(t) — третий+ элемент по номеру",
+            "auto [q, r] = pair — structured bindings (C++17): два имени вместо first/second"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <string>\n#include <tuple>\n#include <utility>\n#include <vector>\n\nint main() {\n    std::pair<std::string, int> item = {\"Bread\", 42};\n    std::cout << item.first << ' ' << item.second << std::endl;\n\n    std::vector<std::pair<std::string, int>> stock = {\n        {\"Bread\", 42},\n        {\"Milk\", 60}\n    };\n    for (const auto& p : stock) {\n        std::cout << p.first << \": \" << p.second << std::endl;\n    }\n\n    std::tuple<std::string, int, double> record = {\"Anna\", 1, 4.5};\n    std::cout << std::get<0>(record) << ' '\n              << std::get<1>(record) << ' '\n              << std::get<2>(record) << std::endl;\n    return 0;\n}",
+          "output": "Bread 42\nBread: 42\nMilk: 60\nAnna 1 4.5",
+          "caption": "pair хранит два значения, tuple — сколько угодно; get<N> обращается по порядку, нумерация с нуля"
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <string>\n#include <utility>\n\n// Two results out of one function: no out-parameters needed\nstd::pair<int, int> quotientRemainder(int a, int b) {\n    return {a / b, a % b};\n}\n\nint main() {\n    auto [q, r] = quotientRemainder(17, 5);\n    std::cout << \"17 / 5: \" << q << \" and \" << r << std::endl;\n\n    std::pair<std::string, int> person = {\"Alex\", 19};\n    const auto& [name, age] = person;\n    std::cout << name << \" is \" << age << std::endl;\n    return 0;\n}",
+          "output": "17 / 5: 3 and 2\nAlex is 19",
+          "caption": "Пара как возвращаемое значение и structured bindings вместо p.first / p.second"
+        },
+        {
+          "type": "note",
+          "text": "Пары сравниваются поэлементно: сначала first, при равенстве — second. Поэтому sort по vector<pair> упорядочивает по первому элементу, а при равных первых — по второму: стандартный приём для составных ключей. Structured bindings работают и с массивами и с полями struct (по имени полей)."
+        }
+      ]
+    },
+    {
+      "id": "cpp_ds_matrix",
+      "title": "Двумерные массивы",
+      "summary": "Таблица значений: два индекса (строка/колонка), вложенные циклы, сумма по строкам и размеры через sizeof.",
+      "difficulty": "beginner",
+      "tags": [
+        "cpp",
+        "массивы",
+        "матрица",
+        "вложенные циклы"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Двумерный массив — таблица: первый индекс выбирает строку, второй — колонку. В памяти элементы лежат построчно: за всей первой строкой идёт вторая. Обрабатывают такие данные вложенными циклами: внешний идёт по строкам, внутренний — по колонкам в каждой строке."
+        },
+        {
+          "type": "heading",
+          "text": "Размеры и обход"
+        },
+        {
+          "type": "list",
+          "items": [
+            "int table[2][3]; — 2 строки по 3 элемента; число колонок задавать обязательно",
+            "table[i][j] — элемент на пересечении строки i и колонки j",
+            "Инициализация списком списков задаёт все значения разом",
+            "Строк: sizeof(table) / sizeof(table[0]); колонок: sizeof(table[0]) / sizeof(table[0][0])",
+            "Границы те же: индексы от 0, до «размер - 1»"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n\nint main() {\n    int table[2][3] = {\n        {1, 2, 3},\n        {4, 5, 6}\n    };\n\n    int rows = sizeof(table) / sizeof(table[0]);\n    int cols = sizeof(table[0]) / sizeof(table[0][0]);\n    int total = 0;\n\n    for (int i = 0; i < rows; i++) {\n        int rowSum = 0;\n        for (int j = 0; j < cols; j++) {\n            rowSum += table[i][j];\n        }\n        total += rowSum;\n        std::cout << \"Row \" << i << \": \" << rowSum << std::endl;\n    }\n    std::cout << \"Total: \" << total << std::endl;\n    return 0;\n}",
+          "output": "Row 0: 6\nRow 1: 15\nTotal: 21",
+          "caption": "Суммы по строкам: внешний цикл — строка, внутренний — колонки строки"
+        },
+        {
+          "type": "note",
+          "text": "В параметре функции писать число колонок обязательно: void show(int table[][3]) — иначе компилятор не сумеет вычислить адрес элемента. Для таблиц, растущих в рантайме, берите std::vector<std::vector<int>> — внутренние размеры не обязаны совпадать (рваная таблица)."
+        }
+      ]
+    },
+    {
+      "id": "cpp_ds_stack_queue",
+      "title": "Стек и очередь",
+      "summary": "Две дисциплины доступа: LIFO у стека и FIFO у очереди, push/pop/top/front и типовые применения.",
+      "difficulty": "intermediate",
+      "tags": [
+        "cpp",
+        "стек",
+        "очередь",
+        "структуры данных"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Стек работает «последним пришёл — первым вышел» (LIFO): как стопка тарелок, кладём и снимаем сверху. Очередь — «первым пришёл — первым ушёл» (FIFO) — как живая очередь. Эти структуры не сортируют и не ищут: они задают только ПОРЯДОК извлечения. В STL это std::stack и std::queue — адаптеры над deque (об адаптере в STL — отдельная статья)."
+        },
+        {
+          "type": "heading",
+          "text": "Основные операции"
+        },
+        {
+          "type": "list",
+          "items": [
+            "s.push(x) / q.push(x) — положить элемент",
+            "s.top() и s.pop() — посмотреть верхушку и убрать её (два разных вызова)",
+            "q.front() и q.back() — первый и последний элемент очереди",
+            "empty() и size() — признаки границ: цикл while (!s.empty())",
+            "Применения: стек — отмена действий и проверка скобок; очередь — очередь печати и обход в ширину"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <queue>\n#include <stack>\n#include <string>\n\nint main() {\n    std::stack<int> s;\n    s.push(1);\n    s.push(2);\n    s.push(3);\n\n    std::cout << \"stack pops:\";\n    while (!s.empty()) {\n        std::cout << ' ' << s.top();\n        s.pop();\n    }\n    std::cout << std::endl;\n\n    std::queue<std::string> q;\n    q.push(\"first\");\n    q.push(\"second\");\n    q.push(\"third\");\n\n    std::cout << \"queue pops:\";\n    while (!q.empty()) {\n        std::cout << ' ' << q.front();\n        q.pop();\n    }\n    std::cout << std::endl;\n    return 0;\n}",
+          "output": "stack pops: 3 2 1\nqueue pops: first second third",
+          "caption": "Стек отдаёт элементы в обратном порядке (последний первым), очередь — в порядке вставки"
+        },
+        {
+          "type": "note",
+          "text": "pop() не возвращает значение — сначала top()/front(), потом pop(), иначе последний элемент уйдёт не прочитанным. Проверка скобок стеком: открывающая — push, закрывающая — сверить с top и pop; к концу текста стек должен опустеть."
+        }
+      ]
     }
   ]
 }

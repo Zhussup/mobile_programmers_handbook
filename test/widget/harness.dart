@@ -64,7 +64,10 @@ class AppHarness {
   /// по умолчанию контент ЧИТАЕТСЯ С ДИСКА (dart:io, синхронно; вне
   /// fake-async это допустимо), поэтому виджет-тесты идут по реальному
   /// JSON; подменить контент можно, передав [ArticleRepository.fromRaw]
-  /// явно.
+  /// явно (P8/P9 чаще используют inline-фикстуры — fixtures.dart).
+  ///
+  /// БД пользовательских данных (favorites/history, P9) — in-memory база
+  /// [db], открытая в [setUp].
   Future<void> pumpApp(
     WidgetTester tester, {
     required String initialLocation,
@@ -78,6 +81,7 @@ class AppHarness {
         initialLocation: initialLocation,
         referenceRepository:
             referenceRepository ?? _defaultReferenceRepository(),
+        database: db,
       ),
     );
   }
@@ -85,12 +89,27 @@ class AppHarness {
   /// Синхронное чтение файлов контента с диска + разбор (fromRaw).
   ///
   /// rootBundle-IO недоступен внутри fake-async-зоны виджет-теста, поэтому
-  /// реальный контент подаётся так.
+  /// реальный контент подаётся так. Отсутствующие файлы (контент
+  /// расширяется параллельно: cpp_stl/cpp_oop/dart_flutter ещё не на диске)
+  /// пропускаются — репозиторий в production так же терпим к ним.
   ArticleRepository _defaultReferenceRepository() {
     return ArticleRepository.fromRaw([
       for (final name in ArticleRepository.contentFiles)
-        File('assets/content/reference/$name').readAsStringSync(),
+        if (File('assets/content/reference/$name').existsSync())
+          File('assets/content/reference/$name').readAsStringSync(),
     ]);
+  }
+
+  /// Дать реальному циклу событий завершить БД-операции, запущенные из
+  /// колбэков фрейма (запись истории в postFrame при открытии статьи, P9).
+  ///
+  /// После реального ожидания один pump — обработать завершившиеся
+  /// микрозадачи и уведомления провайдеров.
+  Future<void> settleRealIo(WidgetTester tester) async {
+    await tester.runAsync(() async {
+      await Future<void>.delayed(const Duration(milliseconds: 250));
+    });
+    await tester.pump();
   }
 
   /// Нажать кнопку, чей обработчик ждёт реальной IO (SQLite ffi), и

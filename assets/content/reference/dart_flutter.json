@@ -1,0 +1,294 @@
+{
+  "category": {
+    "id": "dart_flutter",
+    "title": "Dart/Flutter",
+    "icon": "school",
+    "description": "Язык Dart и фреймворк Flutter: синтаксис, null safety, асинхронность и построение интерфейса виджетами."
+  },
+  "articles": [
+    {
+      "id": "dart_basics",
+      "title": "Основы Dart: main и переменные",
+      "summary": "Точка входа main(), var/final/const, основные типы и строковая интерполяция $x и ${expr}.",
+      "difficulty": "beginner",
+      "tags": [
+        "dart",
+        "основы",
+        "переменные",
+        "интерполяция"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Dart — язык, на котором пишет Flutter: сильная статическая типизация с выводом типов, всё — объект. Точка входа — функция main(). Объявления переменных: var (тип выводится из значения), final (один раз присвоить — нельзя перезаписать), const (константа, известная на этапе компиляции). Явный тип ставят, когда хочется закрепить: int, double, String, bool."
+        },
+        {
+          "type": "heading",
+          "text": "Синтаксис"
+        },
+        {
+          "type": "list",
+          "items": [
+            "void main() { ... } — точка входа приложения",
+            "var hours = 72; — тип выведен из значения (int)",
+            "final String name; — присвоение только один раз (необязательно сразу, но лишь однажды)",
+            "const int year = 2025; — известно на этапе компиляции",
+            "Интерполяция: 'В $year' и вычисление 'Сумма ${a + b}'"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "dart",
+          "code": "void main() {\n  const int year = 2025;    // compile-time constant\n  final String name;        // final: assigned ONCE\n  name = 'Alex';\n\n  var hours = 72;           // type inferred (int)\n  double score = 4.6;\n  bool passed = true;\n\n  print(name);\n  print('In $year $name studied $hours hours');\n  print('Score: $score. Passed: $passed');\n}",
+          "output": "Alex\nIn 2025 Alex studied 72 hours\nScore: 4.6. Passed: true",
+          "caption": "const, final и var рядом; строки в Dart традиционно в одинарных кавычках, $value подставляет значение"
+        },
+        {
+          "type": "code",
+          "language": "dart",
+          "code": "void main() {\n  const a = 5, b = 3;\n  print('$a + $b = ${a + b}');\n\n  final items = <String>['intro', 'loops'];\n  print('items: ${items.length} -> ${items[0]}, ${items[1]}');\n}",
+          "output": "5 + 3 = 8\nitems: 2 -> intro, loops",
+          "caption": "Выражение внутри ${...}: сложение чисел и вызов items.length прямо в строке"
+        },
+        {
+          "type": "note",
+          "text": "final vs const: final инициализируется на ВЫПОЛНЕНИИ (можно от результата функции), const требует известности на компиляции. Вывод в консоль — print() из dart:core: во Flutter он уходит в лог/консоль отладки. Linter проекта советует prefer_final_locals: var берут, когда переменную точно перезапишут."
+        }
+      ]
+    },
+    {
+      "id": "dart_null_safety",
+      "title": "Null safety",
+      "summary": "Nullable-типы String?, безопасный доступ ?., значение по умолчанию ?? и оператор «не-null» !.",
+      "difficulty": "intermediate",
+      "tags": [
+        "dart",
+        "null safety",
+        "nullable",
+        "операторы"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Начиная с Dart 2.12 действует null safety: по умолчанию переменная НЕ может быть null — String всегда содержит строку. Допускает null специальный тип с вопросом: String?. Компилятор требует «разобраться» с nullable-значением до использования: без проверки не скомпилируется. Это убирает целый класс аварий «null is not subtype», оставляя их на этапе компиляции."
+        },
+        {
+          "type": "heading",
+          "text": "Работа с null"
+        },
+        {
+          "type": "list",
+          "items": [
+            "String x; — не null: всегда строка; String? x; — может быть null",
+            "x?.length — безопасный доступ: null вместо ошибки, если x == null",
+            "x ?? 'fallback' — значение по умолчанию при null (coalesce)",
+            "x! — утверждение «не null»: иначе runtime-ошибка; по возможности избегают",
+            "if (x != null) { ... } — после проверки x внутри блока ведёт себя как String (promotion)"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "dart",
+          "code": "void main() {\n  String city = 'Perm';   // non-nullable\n  String? nickname;       // String? - may be null\n  print(nickname);\n\n  print(city.length);\n  nickname = 'Pip';\n  print(nickname.length); // flow analysis: now not null\n\n  nickname = null;        // fine for String?\n  print(nickname ?? 'none');\n}",
+          "output": "null\n4\n3\nnone",
+          "caption": "String? разрешает null (выводится «null»), ?? подставляет замену; после присвоения длину можно читать напрямую"
+        },
+        {
+          "type": "code",
+          "language": "dart",
+          "code": "int safeLength(String? text) {\n  return text?.length ?? 0;   // ?. with ?? : null-safe chain\n}\n\nvoid main() {\n  print(safeLength(null));\n  print(safeLength('Flutter'));\n}",
+          "output": "0\n7",
+          "caption": "Канонический шаблон text?.length ?? 0: безопасный доступ с запасным значением"
+        },
+        {
+          "type": "note",
+          "text": "Для ПОЛЕЙ класса promotion не работает: поле можно было поменять между проверкой и чтением, поэтому компилятор не доверяет — читайте поле в локальную переменную и работайте с ней. Оператор ! — для мест, где вы УВЕРЕНЫ в не-null: если ошиблись, ошибка вылетит В РАБОТЕ, а не на компиляции, поэтому в приложении его заменяют на ?. или ??."
+        }
+      ]
+    },
+    {
+      "id": "dart_functions",
+      "title": "Функции и стрелочный синтаксис",
+      "summary": "Стрелочное =>, именованные и позиционные параметры, значения по умолчанию, анонимные функции.",
+      "difficulty": "intermediate",
+      "tags": [
+        "dart",
+        "функции",
+        "named params",
+        "анонимные функции"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Функции Dart — объекты: их можно передавать в аргументах (колбэки onPressed) и держать в переменных. Для функции из одной строки есть стрелочный синтаксис =>. Виды параметров: обязательные позиционные, именованные в фигурных скобках {} и опциональные позиционные в квадратных []."
+        },
+        {
+          "type": "heading",
+          "text": "Виды параметров"
+        },
+        {
+          "type": "list",
+          "items": [
+            "int doubleIt(int n) => n * 2; — стрелочный синтаксис",
+            "{required int base, int exp = 2} — именованные: required обязателен, exp имеет значение по умолчанию",
+            "[String? title] — опциональные позиционные",
+            "final add = (int a, int b) => a + b; — анонимная функция (лямбда)",
+            "Именованные параметры без required и без default — nullable типа (? — иначе компилятор ругается)"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "dart",
+          "code": "int doubleIt(int n) => n * 2;         // arrow syntax: one expression\n\nint power({required int base, int exp = 2}) {\n  var result = 1;\n  for (var i = 0; i < exp; i++) {\n    result *= base;\n  }\n  return result;\n}\n\nvoid greet(String name, [String? title]) {  // optional positional\n  final prefix = title == null ? 'Hello, ' : '$title, ';\n  print('$prefix$name');\n}\n\nvoid main() {\n  print(doubleIt(21));\n  print(power(base: 3));\n  print(power(base: 2, exp: 5));\n\n  greet('Anna');\n  greet('Anna', 'Dr.');\n\n  final add = (int a, int b) => a + b;      // anonymous function\n  print(add(2, 3));\n}",
+          "output": "42\n9\n32\nHello, Anna\nDr., Anna\n5",
+          "caption": "Стрелочный синтаксис, именованные параметры с default и опциональный позиционный title"
+        },
+        {
+          "type": "note",
+          "text": "Именованные параметры делают вызовы читаемыми: power(base: 3, exp: 5) понятнее, чем power(3, 5) с непонятным порядком аргументов. Стрелочный синтаксис — только для ОДНОГО выражения с return внутри: тело с if/for пишется в обычных скобках. Анонимная функция — основа колбэков Flutter: onPressed: () => setState(...) — это тоже она."
+        }
+      ]
+    },
+    {
+      "id": "dart_async",
+      "title": "Future, async и await",
+      "summary": "Асинхронность Dart: Future как обещание результата, async-функции, await, Future.wait и обработка ошибок.",
+      "difficulty": "advanced",
+      "tags": [
+        "dart",
+        "async",
+        "future",
+        "await"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Dart однопоточный и событийный: «долгое ожидание» не блокирует приложение — работает event loop. Future — «обещание результата в будущем»; await подождёт готовности и вернёт значение. Функция, в которой есть await, помечается async. В Flutter await встречается везде: чтение БД (sqflite), время (Future.delayed), диалоги."
+        },
+        {
+          "type": "heading",
+          "text": "Правила await"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Future<String> f() async — асинхронная функция: обещает String",
+            "final value = await f(); — дождаться и получить ЗНАЧЕНИЕ, а не Future",
+            "Без await в переменной лежит сам Future — объект-«обещание»",
+            "Future.wait([...]) — подождать несколько разом; результат — список В ПОРЯДКЕ ВЫЗОВА",
+            "Ошибки асинхронных вызовов ловятся try/catch вокруг await"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "dart",
+          "code": "Future<String> slowTask(String label, int ms) async {\n  await Future.delayed(Duration(milliseconds: ms));\n  return '$label done';\n}\n\nFuture<void> main() async {\n  print('start');\n\n  final first = await slowTask('first', 50);\n  print(first);\n\n  // Both tasks run concurrently; list is in call order\n  final results = await Future.wait([\n    slowTask('second', 30),\n    slowTask('third', 60),\n  ]);\n  print(results);\n\n  print('end');\n}",
+          "output": "start\nfirst done\n[second done, third done]\nend",
+          "caption": "await по одному и Future.wait параллелит; список в порядке вызова, а не готовности"
+        },
+        {
+          "type": "code",
+          "language": "dart",
+          "code": "Future<int> divide(int a, int b) async {\n  await Future.delayed(const Duration(milliseconds: 10));\n  if (b == 0) {\n    throw Exception('division by zero');\n  }\n  return a ~/ b;\n}\n\nFuture<void> main() async {\n  print(await divide(10, 2));\n\n  try {\n    print(await divide(10, 0));\n  } catch (e) {\n    print('caught: $e');\n  }\n  print('after');\n}",
+          "output": "5\ncaught: Exception: division by zero\nafter",
+          "caption": "throw внутри async-функции доходит до catch around await; после ошибки main продолжается"
+        },
+        {
+          "type": "note",
+          "text": "await внутри цикла ждёт ПО ОДНОМУ — последовательные вызовы; где параллелить — Future.wait. Future.delayed — в учебном коде подставка вместо сети и БД. В Flutter всё то же: onPressed — колбэк, а load() пишет await database.query(...); при этом UI не замерзает, потому что await не блокирует поток, а «вешает» ожидание на event loop."
+        }
+      ]
+    },
+    {
+      "id": "dart_stateful_widget",
+      "title": "StatelessWidget и StatefulWidget",
+      "summary": "Два базовых вида виджетов: build от final-полей против изменяемого состояния и setState; State как хранитель данных.",
+      "difficulty": "intermediate",
+      "tags": [
+        "flutter",
+        "виджеты",
+        "state",
+        "setState"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Всё во Flutter-интерфейсе — виджет. Виджет немутабелен (StatelessWidget: построен из final-полей и не меняется), либо несёт состояние (StatefulWidget: значение живёт в отдельном объекте State). Правило выбора: если экрану не нужно ничего менять после построения (страница текста, статичный интерфейс) — Stateless; иначе — Stateful (формы, счётчики, флажки)."
+        },
+        {
+          "type": "heading",
+          "text": "Механика StatefulWidget"
+        },
+        {
+          "type": "list",
+          "items": [
+            "class CounterPage extends StatefulWidget — конфигурация виджета",
+            "State<CounterPage> createState() => _CounterPageState(); — состояние отдельный объект",
+            "Поле _count живёт в State; build() рисует интерфейс по нему",
+            "setState(() { _count++; }) — изменить поле И перестроить экран",
+            "onPressed: _increment — метод как колбэк (без скобок: передаём, а не вызываем)"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "dart",
+          "code": "import 'package:flutter/material.dart';\n\n// StatelessWidget: build depends only on final fields\nclass TitleCard extends StatelessWidget {\n  const TitleCard({super.key, required this.title});\n\n  final String title;\n\n  @override\n  Widget build(BuildContext context) {\n    return Card(\n      child: Padding(\n        padding: const EdgeInsets.all(16),\n        child: Text(title, style: Theme.of(context).textTheme.titleLarge),\n      ),\n    );\n  }\n}\n\nvoid main() {\n  runApp(const MaterialApp(\n    home: Scaffold(\n      body: Center(\n          child: TitleCard(title: 'Flutter reference'),\n        ),    ),\n  ));\n}",
+          "caption": "StatelessWidget: build строится из final-полей; изменить надпись — создать новый виджет с новым полем"
+        },
+        {
+          "type": "code",
+          "language": "dart",
+          "code": "import 'package:flutter/material.dart';\n\n// StatefulWidget: build depends on mutable state\nclass CounterPage extends StatefulWidget {\n  const CounterPage({super.key});\n\n  @override\n  State<CounterPage> createState() => _CounterPageState();\n}\n\nclass _CounterPageState extends State<CounterPage> {\n  int _count = 0;\n\n  void _increment() {\n    setState(() {          // setState marks the screen for rebuild\n      _count++;\n    });\n  }\n\n  @override\n  Widget build(BuildContext context) {\n    return Scaffold(\n      body: Center(\n        child: Text('$_count'),\n      ),\n      floatingActionButton: FloatingActionButton(\n        onPressed: _increment,\n        child: const Icon(Icons.add),\n      ),\n    );\n  }\n}\n\nvoid main() => runApp(const MaterialApp(home: CounterPage()));",
+          "caption": "StatefulWidget: значение хранится в State; setState обновляет поле и перерисовывает экран"
+        },
+        {
+          "type": "note",
+          "text": "Виджеты — «конфигурации», State — долгоживущая часть: Flutter может пересоздавать виджет при каждой перерисовке, состояние при этом сохраняется. setState нужен только для полей, влияющих на build; если поле на экран не влияет — достаточно изменить его без setState. В примерах нет output: это UI-код, исполняется при запуске Flutter-приложения (примеры Dart-консоли — в статьях выше)."
+        }
+      ]
+    },
+    {
+      "id": "dart_layout_widgets",
+      "title": "Row, Column и Container",
+      "summary": "Композиция интерфейса: Container как «коробка», Column и Row как стеки по вертикали и горизонтали, SizedBox-зазоры.",
+      "difficulty": "intermediate",
+      "tags": [
+        "flutter",
+        "виджеты",
+        "layout",
+        "row",
+        "column"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Интерфейс собирается ВЛОЖЕНИЕМ виджетов (композиция): Container — универсальная «коробка» с отступами и цветом; Column складывает children вертикально, Row — по горизонтали. Внутри контейнеров живут сколько угодно потомков через параметр children: [...]. Разница с C++-подходом: нет «контейнер + добавить» API — вся структура описывается деревом аргументов."
+        },
+        {
+          "type": "heading",
+          "text": "Три строительных блока"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Container(child, padding, color, margin) — коробка: padding изнутри, margin снаружи",
+            "Column(children: [...]) — вертикальный стек; Row — горизонтальный",
+            "SizedBox(width: 8, height: 8) — зазор между элементами (вместо margin у Row)",
+            "mainAxisSize: MainAxisSize.min — контейнер НЕ растягивается на весь свободный размер",
+            "crossAxisAlignment: CrossAxisAlignment.stretch — растянуть потомков по поперечной оси"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "dart",
+          "code": "import 'package:flutter/material.dart';\n\nclass ProfileScreen extends StatelessWidget {\n  const ProfileScreen({super.key});\n\n  @override\n  Widget build(BuildContext context) {\n    return Scaffold(\n      body: SafeArea(\n        child: Container(\n          padding: const EdgeInsets.all(16),\n          child: Column(\n            crossAxisAlignment: CrossAxisAlignment.stretch,\n            children: [\n              Container(\n                color: Colors.green,\n                child: const Text('Column stacks children vertically'),\n              ),\n              const SizedBox(height: 8),\n              Row(\n                children: [\n                  Container(\n                    color: Colors.orange,\n                    child: const Text('Row item 1'),\n                  ),\n                  const SizedBox(width: 8),\n                  Container(\n                    color: Colors.orange,\n                    child: const Text('Row item 2'),\n                  ),\n                ],\n              ),\n            ],\n          ),\n        ),\n      ),\n    );\n  }\n}\n\nvoid main() {\n  runApp(const MaterialApp(home: ProfileScreen()));\n}",
+          "caption": "Container-обёртка, Column с двумя потомками и Row с зазором SizedBox между ними"
+        },
+        {
+          "type": "note",
+          "text": "Row переполняется, если потомков сликом много: длинная строка вылезет за границы (RenderFlex overflow) — для многострочного текста внутри Row добавляют Expanded и гибкие параметры (softWrap: true). SizedBox удобнее отступа «margin»: не тянется, а просто занимает место. Padding и Align — частные случаи Container: для простого отступа пишут Padding."
+        }
+      ]
+    }
+  ]
+}

@@ -13,6 +13,15 @@ class AppSnackBarMessages {
 
   /// После удаления (сниппет — P10).
   static const String deleted = 'Удалено';
+
+  /// Избранное (P9): статья добавлена.
+  static const String favoriteAdded = 'Добавлено в избранное';
+
+  /// Избранное (P9): статья убрана.
+  static const String favoriteRemoved = 'Удалено из избранного';
+
+  /// История (P9): очищена кнопкой «Очистить».
+  static const String historyCleared = 'История очищена';
 }
 
 /// Единый SnackBar приложения: базовая версия (message + isError) и

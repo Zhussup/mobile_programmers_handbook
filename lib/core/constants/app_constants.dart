@@ -38,11 +38,23 @@ class AppConstants {
   /// в маршруте передаётся только id (подводный камень №8 из плана).
   static const String routeArticle = '/article/:id';
 
+  /// Поиск (P8) и избранное/история (P9) — НЕ в публичном allowlist,
+  /// поэтому под auth-guard'ом автоматически (см. authRedirect).
+  static const String routeSearch = '/search';
+  static const String routeFavorites = '/favorites';
+  static const String routeHistory = '/history';
+
   /// Путь к списку статей категории: `/reference/<categoryId>`.
   static String categoryPath(String categoryId) => '/reference/$categoryId';
 
   /// Путь к статье: `/article/<articleId>`.
   static String articlePath(String articleId) => '/article/$articleId';
+
+  /// Лимит истории просмотров (топ-N, план: индекс user_id + viewed_at).
+  static const int historyLimit = 20;
+
+  /// Сколько недавних статей показывать в секции «Продолжить» на главной.
+  static const int homeRecentLimit = 5;
 
   /// Длительность показа сплэш-экрана.
   static const Duration splashDuration = Duration(milliseconds: 1500);

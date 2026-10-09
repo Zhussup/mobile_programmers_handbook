@@ -231,6 +231,135 @@
           "text": "Для «настоящего» округления используйте std::round из <cmath>: оно вернёт 8 для 7.9. static_cast не приведёт несовместимые типы — это его преимущество: часть ошибок отлавливается компилятором."
         }
       ]
+    },
+    {
+      "id": "cpp_syn_comments_style",
+      "title": "Комментарии и стиль кода",
+      "summary": "Комментарии строки и блока, правила чистого кода: осмысленные имена, отступы, пустые строки как разделители.",
+      "difficulty": "beginner",
+      "tags": [
+        "cpp",
+        "основы",
+        "комментарии",
+        "стиль"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Комментарий — текст для человека: компилятор его игнорирует. Их два вида: // до конца строки и /* ... */ на любое число строк. Комментарий объясняет «почему», а не перебрасывает словами «что» — сам код говорит «что». Лучший комментарий — говорящее имя переменной, а не поясняющий абзац."
+        },
+        {
+          "type": "heading",
+          "text": "Правила хорошего стиля"
+        },
+        {
+          "type": "list",
+          "items": [
+            "// — короткое пояснение к строке или над ней",
+            "/* ... */ — блочный комментарий на несколько строк",
+            "Имена — говорящие: score вместо s, average вместо av",
+            "Отступ — 4 пробела на уровень вложенности; скобки показывают границы блоков",
+            "Пустая строка отделяет логические шаги: ввод, вычисление, вывод"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "// Computes area and perimeter of a rectangle.\n#include <iostream>\n\n/*\n * A block comment: everything between these markers\n * is ignored by the compiler. Good for the general\n * logic description right above the code.\n */\n\nint main() {\n    const int width = 5;   // cm\n    const int height = 4;  // cm\n\n    std::cout << \"Area: \" << width * height << std::endl;\n    std::cout << \"Perimeter: \" << 2 * (width + height) << std::endl;\n    return 0;\n}",
+          "output": "Area: 20\nPerimeter: 18",
+          "caption": "Оба вида комментария: они не попадают в откомпилированную программу"
+        },
+        {
+          "type": "note",
+          "text": "Блочный комментарий нельзя вкладывать в себя: первый же */ его закроет, остаток строки станет кодом. Имя width в примере сделало комментарий к строке ненужным — это и есть «самодокументирующийся» код: часть пояснений переносится в имена."
+        }
+      ]
+    },
+    {
+      "id": "cpp_syn_functions",
+      "title": "Функции и параметры",
+      "summary": "Своя функция: объявление, возврат значения, передача по значению и по ссылке, значение по умолчанию, перегрузка.",
+      "difficulty": "intermediate",
+      "tags": [
+        "cpp",
+        "функции",
+        "параметры",
+        "перегрузка"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Функция — именованный блок кода: принимает данные (параметры), выполняет работу и возвращает результат через return. Она спасает от копипасты: вычисление пишется один раз и вызывается из разных мест. Тип слева от имени — тип возвращаемого значения; void означает «ничего не возвращает»."
+        },
+        {
+          "type": "heading",
+          "text": "Как передавать параметры"
+        },
+        {
+          "type": "list",
+          "items": [
+            "void f(int x) — по значению: функция работает с копией",
+            "void f(int& x) — по ссылке: функция меняет сам аргумент",
+            "void f(const std::string& s) — по const-ссылке: без копии и без права менять (норма для строк)",
+            "int add(int a, int b) — возврат через return",
+            "void f(int x, int delta = 1) — значение по умолчанию: вызывается и как f(5), и как f(5, 3)"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n\n// Prints the square: parameter by value (a copy)\nvoid printSquare(int n) {\n    std::cout << n * n << std::endl;\n}\n\n// Changes the argument itself: parameter by reference\nvoid boost(int& value, int delta = 1) {\n    value += delta;\n}\n\n// Overload: same name, different parameter list\ndouble average(double a, double b) {\n    return (a + b) / 2;\n}\n\ndouble average(double a, double b, double c) {\n    return (a + b + c) / 3;\n}\n\nint main() {\n    printSquare(7);\n    std::cout << average(3.0, 4.0) << std::endl;\n    std::cout << average(1.0, 2.0, 6.0) << std::endl;\n\n    int count = 10;\n    boost(count);     // default delta = 1\n    boost(count, 5);  // delta given explicitly\n    std::cout << count << std::endl;\n    return 0;\n}",
+          "output": "49\n3.5\n3\n16",
+          "caption": "printSquare получает копию, boost меняет сам count, average перегружена по числу параметров"
+        },
+        {
+          "type": "note",
+          "text": "Перегрузка (overload) — несколько функций с одним именем, если различается список параметров: компилятор выбирает по типам аргументов. Перегрузка только по типу возврата не работает. Значение по умолчанию стоит в конце списка параметров — так вызов f() остаётся осмысленным."
+        }
+      ]
+    },
+    {
+      "id": "cpp_syn_namespaces_scope",
+      "title": "Области видимости и неймспейсы",
+      "summary": "Где живёт имя: локальные и глобальные переменные, затенение, :: для глобального имени и пространства имён.",
+      "difficulty": "intermediate",
+      "tags": [
+        "cpp",
+        "неймспейсы",
+        "области видимости",
+        "переменные"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Область видимости — часть программы, где имя существует и доступно. Локальная переменная появляется в момент объявления и умирает в конце ближайшей пары фигурных скобок; глобальная живёт всю программу. Внутренней области разрешено объявить то же имя — внешнее «затенится», а к глобальному можно обратиться через ::."
+        },
+        {
+          "type": "heading",
+          "text": "Имена под зонтиком namespace"
+        },
+        {
+          "type": "list",
+          "items": [
+            "namespace physics { ... } — группа имён под одной крышей",
+            "physics::g — доступ через :: (оператор области видимости)",
+            "Имена в разных неймспейсах не мешают друг другу — даже одинаковые (g в двух неймспейсах)",
+            "::counter — глобальная переменная, затенённая локальной",
+            "using namespace std; убирает префикс std:: — удобно в учебном коде, спорно в большом проекте"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n\nnamespace physics {\n    const double g = 9.81;\n}\n\nnamespace geometry {\n    const double g = 2.5;\n}\n\nint counter = 100; // global variable\n\nvoid show() {\n    int counter = 1; // local name shadows the global one\n    std::cout << counter << ' ' << ::counter << std::endl;\n}\n\nint main() {\n    show();\n    std::cout << physics::g << ' ' << geometry::g << std::endl;\n\n    {\n        int inner = 7; // visible only between these braces\n        std::cout << inner << std::endl;\n    }\n    // std::cout << inner; // error: no such name here\n    std::cout << counter << std::endl;\n    return 0;\n}",
+          "output": "1 100\n9.81 2.5\n7\n100",
+          "caption": "Локальный counter затенён глобальным (::counter видит «снаружи»), у каждого неймспейса своё g"
+        },
+        {
+          "type": "note",
+          "text": "Правило простое: кто объявил — тот и видит; имя доступно от объявления до конца своей пары скобок. Незаданный неймспейс (namespace { ... }) делает имена доступными только внутри своего файла — современная замена static для глобальных переменных."
+        }
+      ]
     }
   ]
 }

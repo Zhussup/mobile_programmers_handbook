@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../reference_provider.dart';
 import '../widgets/category_card.dart';
 
-/// Вкладка «Справочник» (P6): список категорий из JSON-контента.
+/// Вкладка «Справочник» (P6, дополнен P8/P9): список категорий из
+/// JSON-контента + поиск и избранное в AppBar.
 ///
 /// Данные — только из [ReferenceProvider] (id в маршруте — подводный камень
-/// №8 из плана). Переход: `/reference/<categoryId>` → список статей.
+/// №8 из плана). Переходы: `/reference/<categoryId>` → список статей,
+/// `/search` (P8), `/favorites` (P9) — все приватные, под auth-guard'ом.
 class ReferenceScreen extends StatelessWidget {
   const ReferenceScreen({super.key});
 
@@ -18,7 +22,23 @@ class ReferenceScreen extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Справочник')),
+      appBar: AppBar(
+        title: const Text('Справочник'),
+        actions: [
+          IconButton(
+            key: const Key('reference-open-search'),
+            tooltip: 'Поиск',
+            onPressed: () => context.push(AppConstants.routeSearch),
+            icon: const Icon(Icons.search),
+          ),
+          IconButton(
+            key: const Key('reference-open-favorites'),
+            tooltip: 'Избранное',
+            onPressed: () => context.push(AppConstants.routeFavorites),
+            icon: const Icon(Icons.favorite_border),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),

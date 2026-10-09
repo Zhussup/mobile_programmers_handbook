@@ -1,0 +1,372 @@
+{
+  "category": {
+    "id": "stl",
+    "title": "STL",
+    "icon": "storage",
+    "description": "Стандартная библиотека шаблонов: контейнеры, итераторы и алгоритмы — готовые инструменты вместо рукописных циклов."
+  },
+  "articles": [
+    {
+      "id": "cpp_stl_containers",
+      "title": "Обзор контейнеров STL",
+      "summary": "Семейства контейнеров: последовательные, ассоциативные и адаптеры; по какому признаку выбирать контейнер под задачу.",
+      "difficulty": "beginner",
+      "tags": [
+        "cpp",
+        "stl",
+        "контейнеры",
+        "обзор"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "STL — стандартная библиотека шаблонов: готовые структуры данных (контейнеры) и операции над ними (алгоритмы), соединяемые итераторами. Типовое решение учебной задачи — «контейнер + алгоритм», а не новый тип данных с нуля. Первое умение — правильно выбрать контейнер, второе — не переписывать то, что библиотека уже умеет."
+        },
+        {
+          "type": "heading",
+          "text": "Семейства контейнеров"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Последовательные: vector — массив с ростом в конец; deque/list — вставки на обоих концах и в середину; array — фиксированный размер",
+            "Ассоциативные: map/set — самосортированные (по ключу); unordered_map/unordered_set — хеш-таблица за O(1) в среднем",
+            "Адаптеры: stack, queue, priority_queue — над другим контейнером, с урезанным интерфейсом",
+            "По умолчанию берут vector; map/set — когда нужны ключи и отсортированный обход",
+            "Общая логика: доступ по индексу — vector; поиск по ключу — map; «есть ли дубль» — set"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <map>\n#include <set>\n#include <string>\n#include <vector>\n\nint main() {\n    // vector: order kept, duplicates allowed\n    std::vector<std::string> words = {\"banana\", \"apple\", \"banana\"};\n    std::cout << \"vector size: \" << words.size() << std::endl;\n\n    // set: unique values, stored sorted\n    std::set<std::string> unique(words.begin(), words.end());\n    std::cout << \"set size: \" << unique.size() << std::endl;\n\n    // map: key -> value, sorted by key\n    std::map<std::string, int> prices;\n    prices[\"apple\"] = 10;\n    prices[\"banana\"] = 6;\n    std::cout << \"map size: \" << prices.size()\n              << \", apple: \" << prices[\"apple\"] << std::endl;\n    return 0;\n}",
+          "output": "vector size: 3\nset size: 2\nmap size: 2, apple: 10",
+          "caption": "Одни и те же данные в трёх контейнерах: vector держит всё, set убирает дубли, map хранит ключи со значениями"
+        },
+        {
+          "type": "note",
+          "text": "Каждая тема — своя статья: вектор углублённо в «vector: итераторы и ёмкость», map и set — в «map и set», адаптеры — в «priority_queue и адаптеры». Здесь только карта местности. Итог по выбору: индекс — vector; ключ — map; уникальность — set; порядок обработки — stack/queue."
+        }
+      ]
+    },
+    {
+      "id": "cpp_stl_vector_deep",
+      "title": "vector: итераторы и ёмкость",
+      "summary": "Вектор изнутри: итераторы begin/end, size против capacity, reserve от перераспределений, insert/erase в середину.",
+      "difficulty": "intermediate",
+      "tags": [
+        "cpp",
+        "stl",
+        "vector",
+        "итераторы",
+        "ёмкость"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Базовый вектор (в «Структурах данных») показал push_back и range for. Здесь — его внутренняя механика: элементы лежат в непрерывной памяти; когда места не хватает, vector выделяет блок побольше и перевозит туда всё содержимое — поэтому capacity() может обогнать size(). Вторая сторона — итераторы: единый способ обхода, тот же, что ждут все алгоритмы STL."
+        },
+        {
+          "type": "heading",
+          "text": "Итераторы вместо индексов"
+        },
+        {
+          "type": "list",
+          "items": [
+            "v.begin(), v.end() — итераторы на первый элемент и «за последний»; *it — значение, ++it — шаг",
+            "range for (for (int x : v)) — этот же цикл, записанный коротко",
+            "size() — сколько занято; capacity() — сколько памяти уже выделено",
+            "reserve(n) — выделить память под n элементов заранее, чтобы избежать «перевозок»",
+            "insert/erase в середину — сдвиг хвоста, поэтому O(n)"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <vector>\n\nint main() {\n    std::vector<int> v;\n    std::cout << \"start: size=\" << v.size()\n              << \" capacity=\" << v.capacity() << std::endl;\n\n    for (int i = 1; i <= 5; i++) {\n        v.push_back(i * 10);\n    }\n    std::cout << \"pushed 5: size=\" << v.size()\n              << \" capacity=\" << v.capacity() << std::endl;\n\n    v.insert(v.begin(), 0);\n    std::cout << \"after insert: size=\" << v.size() << std::endl;\n\n    v.erase(v.begin() + 1, v.begin() + 3);\n    std::cout << \"after erase: size=\" << v.size() << std::endl;\n\n    bool head = true;\n    for (std::vector<int>::iterator it = v.begin(); it != v.end(); ++it) {\n        if (!head) std::cout << ' ';\n        std::cout << *it;\n        head = false;\n    }\n    std::cout << std::endl;\n\n    v.reserve(100);\n    std::cout << \"after reserve: size=\" << v.size()\n              << \" capacity=\" << v.capacity() << std::endl;\n    return 0;\n}",
+          "output": "start: size=0 capacity=0\npushed 5: size=5 capacity=8\nafter insert: size=6\nafter erase: size=4\n0 30 40 50\nafter reserve: size=4 capacity=100",
+          "caption": "Ёмкость растёт скачками (0 -> 8), вставка и стирание сдвигают элементы; итераторный обход вместо индексов"
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <vector>\n\nint main() {\n    std::vector<int> v;\n    v.reserve(4);              // allocate memory ahead of time\n    std::cout << \"reserve: \" << v.capacity() << std::endl;\n\n    for (int i = 0; i < 4; i++) {\n        v.push_back(i + 1);    // no relocation: within the reserve\n    }\n    std::cout << \"size: \" << v.size()\n              << \" capacity: \" << v.capacity() << std::endl;\n\n    v.resize(8, 0);            // extend with zeros\n    std::cout << \"resize: \" << v.size() << std::endl;\n\n    std::cout << v.at(0) << ' ' << v.at(4) << ' ' << v.back() << std::endl;\n    return 0;\n}",
+          "output": "reserve: 4\nsize: 4 capacity: 4\nresize: 8\n1 0 0",
+          "caption": "reserve держит ёмкость ровной при push_back; resize меняет сам размер, дорисовывая нули"
+        },
+        {
+          "type": "note",
+          "text": "После «перевозки» (роста ёмкости) все старые итераторы и указатели на элементы становятся недействительными — берите свежий begin() после каждого изменения размера. Доступ по границам: v[i] границы не проверяет (быстро, но опасно), v.at(i) проверяет и бросает исключение std::out_of_range."
+        }
+      ]
+    },
+    {
+      "id": "cpp_stl_string_algo",
+      "title": "std::string: алгоритмы и символы",
+      "summary": "Строка как диапазон символов: count/count_if, transform, reverse, регистр через toupper/tolower из cctype.",
+      "difficulty": "intermediate",
+      "tags": [
+        "cpp",
+        "stl",
+        "строки",
+        "алгоритмы"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "std::string — тоже контейнер STL: последовательность char с begin()/end(). Значит, к строке применимы обычные алгоритмы: подсчёт, поиск, разворот, преобразование. Посимвольная работа — функции из <cctype>: toupper, tolower, isdigit, isspace; каждая работает с одним символом."
+        },
+        {
+          "type": "heading",
+          "text": "Полезные приёмы"
+        },
+        {
+          "type": "list",
+          "items": [
+            "std::count(begin, end, 'x') — сколько раз встречается символ",
+            "std::count_if(begin, end, isVowel) — подсчёт по правилу (предикат)",
+            "for (char& c : s) c = std::toupper(c); — регистр на месте, через <cctype>",
+            "std::reverse(begin, end) — развернуть строку",
+            "std::string хранит байты: с ASCII честно, с UTF-8 кириллицей — внимание (см. note)"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <algorithm>\n#include <cctype>\n#include <iostream>\n#include <string>\n\n// Predicate: function returning bool for count_if\nbool isVowel(char c) {\n    char lower = static_cast<char>(std::tolower(c));\n    return lower == 'a' || lower == 'e' || lower == 'i' ||\n           lower == 'o' || lower == 'u';\n}\n\nint main() {\n    std::string word = \"Programming\";\n\n    std::cout << \"vowels: \"\n              << std::count_if(word.begin(), word.end(), isVowel) << std::endl;\n\n    std::string upper = word;\n    for (char& c : upper) {\n        c = static_cast<char>(std::toupper(c));\n    }\n    std::cout << upper << std::endl;\n\n    std::reverse(word.begin(), word.end());\n    std::cout << word << std::endl;\n\n    std::cout << \"g: \" << std::count(word.begin(), word.end(), 'g')\n              << std::endl;\n    return 0;\n}",
+          "output": "vowels: 3\nPROGRAMMING\ngnimmargorP\ng: 2",
+          "caption": "Подсчёт по правилу, перевод регистра посимвольно и разворот строки алгоритмом"
+        },
+        {
+          "type": "note",
+          "text": "toupper/tolower принимают и возвращают int: результат приводят обратно в char (static_cast). std::string хранит байты, поэтому для кириллицы в UTF-8 с.size() даст байты, а не символы — посимвольные алгоритмы честны только для ASCII. Базовые операции строк (индексация, find, substr) — в статье cpp_ds_string категории «Структуры данных»."
+        }
+      ]
+    },
+    {
+      "id": "cpp_stl_map_set",
+      "title": "map и set: ключи и множества",
+      "summary": "Ассоциативные контейнеры: map «ключ — значение», set уникальных значений, сортировка по ключу, ловушка оператора [].",
+      "difficulty": "intermediate",
+      "tags": [
+        "cpp",
+        "stl",
+        "map",
+        "set",
+        "словарь"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "map хранит пары «ключ — значение» и держит их ОТСОРТИРОВАННЫМИ по ключу: поиск за O(log n), обход идёт в порядке возрастания ключей, не в порядке вставки. set хранит только ключи и молча отбрасывает дубликаты — готовое средство убрать повторения. Оба устроены на сбалансированном дереве; unordered-версии (unordered_map/unordered_set) — на hash-таблице."
+        },
+        {
+          "type": "heading",
+          "text": "Базовые операции"
+        },
+        {
+          "type": "list",
+          "items": [
+            "m[\"apple\"] = 10 — вставить или обновить по ключу",
+            "m.count(\"apple\") — 1, если ключ есть, иначе 0 (проверка без вставки)",
+            "m.erase(\"apple\") — удалить по ключу",
+            "for (const auto& entry : m) — обход; entry.first — ключ, entry.second — значение",
+            "std::set<int> s = {5, 3, 5, 3}; — останутся {3, 5}: дубли отбрасываются"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <map>\n#include <set>\n#include <string>\n\nint main() {\n    std::map<std::string, int> scores;\n    scores[\"Clara\"] = 82;\n    scores[\"Anna\"] = 90;\n    scores[\"Boris\"] = 75;\n\n    std::cout << \"Boris: \" << scores[\"Boris\"] << std::endl;\n    std::cout << \"has Dan: \" << scores.count(\"Dan\") << std::endl;\n\n    for (const auto& entry : scores) {\n        std::cout << entry.first << \" -> \" << entry.second << std::endl;\n    }\n\n    std::set<int> seen = {5, 3, 5, 3, 8};\n    std::cout << \"set size: \" << seen.size() << std::endl;\n    for (int x : seen) {\n        std::cout << x << std::endl;\n    }\n    return 0;\n}",
+          "output": "Boris: 75\nhas Dan: 0\nAnna -> 90\nBoris -> 75\nClara -> 82\nset size: 3\n3\n5\n8",
+          "caption": "map обошёл записи по АЛФАВИТУ ключей (вставляли Clara, Anna, Boris), set отбросил дубли и отсортировал"
+        },
+        {
+          "type": "note",
+          "text": "Оператор [] у map — источник «гостевых» записей: m[\"Dan\"], которого не было, СОЗДАСТ Dan со значением 0. Поэтому для проверки existence используйте count(), find() или contains() (C++20), а не m[k]. У unordered_map порядок обхода случайный, зато поиск в среднем O(1) — для «только найти» без сортировки он быстрее."
+        }
+      ]
+    },
+    {
+      "id": "cpp_stl_iterators",
+      "title": "Итераторы",
+      "summary": "Единый интерфейс обхода: begin/end, разыменование и инкремент, обратные итераторы, арифметика и недействительность.",
+      "difficulty": "advanced",
+      "tags": [
+        "cpp",
+        "stl",
+        "итераторы",
+        "begin",
+        "end"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Итератор — объект-«указка» на элемент контейнера: тот же интерфейс у vector, string, set и map. Именно поэтому один std::sort работает для любого хранимого типа данных: алгоритмы пишутся в терминах итераторов, а не контейнеров. begin() указывает на первый элемент, end() — на ЭЛЕМЕНТ ЗА ПОСЛЕДНИМ: цикл «пока it != end()» обходит ровно все элементы и не выйдет за границы."
+        },
+        {
+          "type": "heading",
+          "text": "Работа с итератором"
+        },
+        {
+          "type": "list",
+          "items": [
+            "*it — значение под итератором (разыменование); ++it — шаг вперёд",
+            "begin()/end() — прямой обход; rbegin()/rend() — обратный (reverse_iterator)",
+            "it += 2, it - it — арифметика только у векторов/строк (random access); у list её нет",
+            "cbegin()/cend() — const-итераторы: обход без права менять",
+            "После push_back/erase старые итераторы могут протухнуть — берите свежие"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <iterator>\n#include <vector>\n\nint main() {\n    std::vector<int> v = {10, 20, 30, 40, 50};\n\n    std::vector<int>::iterator fwd = v.begin();\n    std::cout << *fwd << std::endl;\n\n    fwd += 2;\n    std::cout << *fwd << std::endl;\n\n    std::vector<int>::reverse_iterator back = v.rbegin();\n    std::cout << *back << ' ' << *(back + 4) << std::endl;\n\n    for (auto it = v.begin(); it != v.end(); ++it) {\n        *it *= 2;                    // change through the iterator\n    }\n    std::cout << v[0] << ' ' << v[4] << std::endl;\n\n    std::cout << std::distance(v.begin(), v.begin() + 3) << std::endl;\n    return 0;\n}",
+          "output": "10\n30\n50 10\n20 100\n3",
+          "caption": "Разыменование, сдвиг на 2, обратный итератор (rbegin — с конца), изменение через it и расстояние distance"
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <set>\n\nint main() {\n    std::set<int> s = {30, 10, 20};\n\n    // Same iterator protocol: set walks sorted, not by index\n    for (std::set<int>::const_iterator it = s.cbegin(); it != s.cend(); ++it) {\n        std::cout << *it << std::endl;\n    }\n\n    // Range-for is the same loop in a shorter spelling\n    for (int x : s) {\n        std::cout << \"value \" << x << std::endl;\n    }\n    return 0;\n}",
+          "output": "10\n20\n30\nvalue 10\nvalue 20\nvalue 30",
+          "caption": "const-итераторы по set и эквивалентный диапазонный for: компилятор разворачивает его в begin/end"
+        },
+        {
+          "type": "note",
+          "text": "end() — «полулунная граница»: разыменовывать его нельзя, сравнивать — можно. Итераторы vector родственны указателям: *it, it+n — те же операции. У map итератор указывает на ПАРУ (пишут it->first / it->second); вставка в set/map итераторы не портит — портит их только erase удалённого элемента."
+        }
+      ]
+    },
+    {
+      "id": "cpp_stl_algorithms",
+      "title": "Алгоритмы STL: find, count_if, transform",
+      "summary": "Готовая батарея <algorithm>: поиск с возвращением итератора, подсчёт по условию, преобразование каждого элемента.",
+      "difficulty": "intermediate",
+      "tags": [
+        "cpp",
+        "stl",
+        "find",
+        "count_if",
+        "transform"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Заголовок <algorithm> — батарея готовых операций над диапазонами: вместо «писать цикл и отлаживать индексы» вызывается функция с говорящим именем. Диапазон задаётся ДВУМЯ итераторами, поэтому один и тот же вызов работает и на vector<int>, и на std::string. Ручной цикл остаётся уместным для нестандартной логики; типовые операции — берутся готовыми."
+        },
+        {
+          "type": "heading",
+          "text": "Три базовых вызова"
+        },
+        {
+          "type": "list",
+          "items": [
+            "std::find(begin, end, x) — итератор на первое вхождение; если не нашлось — end()",
+            "std::count_if(begin, end, pred) — сколько элементов удовлетворяет правилу (pred)",
+            "std::transform(begin, end, out, fn) — применить функцию к каждому и записать результат в out",
+            "Предикат — обычная функция bool: bool isEven(int x) { return x % 2 == 0; }",
+            "Правило проверки через if: if (pos != v.end()) — find возвращает «не нашли», а не -1"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <algorithm>\n#include <iostream>\n#include <vector>\n\nbool isEven(int x) {\n    return x % 2 == 0;\n}\n\nint square(int x) {\n    return x * x;\n}\n\nint main() {\n    std::vector<int> data = {3, 8, 2, 8, 6, 8};\n\n    auto pos = std::find(data.begin(), data.end(), 6);\n    if (pos != data.end()) {\n        std::cout << \"index of 6: \" << pos - data.begin() << std::endl;\n    } else {\n        std::cout << \"6 not found\" << std::endl;\n    }\n\n    std::cout << \"evens: \"\n              << std::count_if(data.begin(), data.end(), isEven) << std::endl;\n\n    std::vector<int> squared(data.size());\n    std::transform(data.begin(), data.end(), squared.begin(), square);\n\n    bool head = true;\n    for (int x : squared) {\n        if (!head) std::cout << ' ';\n        std::cout << x;\n        head = false;\n    }\n    std::cout << std::endl;\n    return 0;\n}",
+          "output": "index of 6: 4\nevens: 5\n9 64 4 64 36 64",
+          "caption": "find с проверкой end(), count_if по предикату и transform, пишущий квадраты в готовый вектор"
+        },
+        {
+          "type": "note",
+          "text": "transform не меняет длину: выходной вектор создаётся нужного размера заранее (squared(data.size())). Для «удалить по правилу» есть приём erase-remove: v.erase(remove_if(...), v.end()). Условие можно передать лямбдой прямо в вызове — синтаксис лямбд в отдельной статье этой категории."
+        }
+      ]
+    },
+    {
+      "id": "cpp_stl_lambdas",
+      "title": "Лямбда-выражения",
+      "summary": "Функция на месте вызова: синтаксис [captures](params){body}, захват по значению и по ссылке, лямбды как компараторы.",
+      "difficulty": "advanced",
+      "tags": [
+        "cpp",
+        "stl",
+        "лямбды",
+        "замыкание"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Лямбда — анонимная функция, объявленная прямо в месте использования: маленький компаратор для sort или правило для count_if хочется держать рядом с вызовом, а не в отдельной функции. Схема: [захват](параметры) { тело }; захват — список внешних переменных, с которыми лямбда работает."
+        },
+        {
+          "type": "heading",
+          "text": "Синтаксис и захват"
+        },
+        {
+          "type": "list",
+          "items": [
+            "[](int a, int b) { return a + b; } — не берёт ничего извне",
+            "[offset] — захват по ЗНАЧЕНИЮ: в лямбде живёт копия offset",
+            "[&calls] — захват по ССЫЛКЕ: изменения видны снаружи",
+            "[=] и [&] — захватить все используемые (по значению/по ссылке); лучше перечислять явно",
+            "(int a, int b) -> double — параметры и тип возврата; тип часто выводится сам"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <algorithm>\n#include <iostream>\n#include <string>\n#include <vector>\n\nint main() {\n    // No capture: pure two-argument function\n    auto add = [](int a, int b) { return a + b; };\n    std::cout << add(2, 3) << std::endl;\n\n    int offset = 10;\n    auto shift = [offset](int x) { return x + offset; };   // by value\n    std::cout << shift(5) << std::endl;\n\n    int calls = 0;\n    auto log = [&calls](const std::string& msg) {          // by reference\n        ++calls;\n        std::cout << msg << \" #\" << calls << std::endl;\n    };\n    log(\"start\");\n    log(\"finish\");\n\n    std::vector<int> v = {1, 5, 2};\n    std::sort(v.begin(), v.end(),\n              [](int a, int b) { return a > b; });         // comparator\n    for (int x : v) {\n        std::cout << x << std::endl;\n    }\n    return 0;\n}",
+          "output": "5\n15\nstart #1\nfinish #2\n5\n2\n1",
+          "caption": "Лямбда без захвата, со захватом по значению и по ссылке и как компаратор убывания в sort"
+        },
+        {
+          "type": "note",
+          "text": "Не забудьте ; после закрывающей фигурной скобки, когда лямбда записана как переменная (auto add = ...;) — частая ошибка. Захват по значению — снимок НА МОМЕНТ создания лямбды; по ссылке — живая связь (если переменная выйдет из области, ссылка протухнет). Лямбда без захватов превращается в обычный указатель на функцию."
+        }
+      ]
+    },
+    {
+      "id": "cpp_stl_priority_queue",
+      "title": "priority_queue и адаптеры",
+      "summary": "Очередь с приоритетом: наверху наибольший, push/pop/top/size, переворот через greater и идея адаптеров контейнеров.",
+      "difficulty": "intermediate",
+      "tags": [
+        "cpp",
+        "stl",
+        "priority_queue",
+        "адаптеры"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "priority_queue — очередь с приоритетом: top() всегда показывает элемент С НАИВЫСШИМ приоритетом, а не «первый вставленный». Полезна для типовых задач «отдай лучший», планирование и объединение отсортированных потоков. Это третий адаптер контейнеров: базовый контейнер (vector) спрятан, наружу торчит только дисциплина доступа — «лучший наверху»."
+        },
+        {
+          "type": "heading",
+          "text": "Операции"
+        },
+        {
+          "type": "list",
+          "items": [
+            "pq.push(x) — положить (автоматически ставит в нужное место)",
+            "pq.pop() — убрать верхний; pq.top() — посмотреть верхний, не убирая",
+            "По умолчанию наверху МАКСИМУМ (наибольшее число)",
+            "std::priority_queue<int, std::vector<int>, std::greater<int>> — «мина»: наверху минимум",
+            "size()/empty() — как у остальных; выборка top/pop за O(log n)"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <functional>\n#include <iostream>\n#include <queue>\n\nint main() {\n    std::priority_queue<int> pq;\n    pq.push(20);\n    pq.push(5);\n    pq.push(45);\n\n    std::cout << \"size: \" << pq.size() << std::endl;\n    std::cout << \"top: \" << pq.top() << std::endl;\n\n    std::cout << \"order:\";\n    while (!pq.empty()) {\n        std::cout << ' ' << pq.top();\n        pq.pop();\n    }\n    std::cout << std::endl;\n\n    // \"Min-heap\": the smallest value on top\n    std::priority_queue<int, std::vector<int>, std::greater<int>> minPq;\n    minPq.push(20);\n    minPq.push(5);\n    std::cout << \"min top: \" << minPq.top() << std::endl;\n    return 0;\n}",
+          "output": "size: 3\ntop: 45\norder: 45 20 5\nmin top: 5",
+          "caption": "Извлечение в порядке убывания (45, 20, 5); компаратор greater<int> переворачивает очередность на минимальную"
+        },
+        {
+          "type": "note",
+          "text": "top() не удаляет элемент — работают парой top + pop. Стек и очередь (их семантика — в статье «Стек и очередь») отличаются лишь тем, ЧТО отдаётся: у стека — верхушка, у очереди — передняя часть, у priority_queue — наибольший. Итератора у адаптеров нет: обойти «в середину» нельзя."
+        }
+      ]
+    }
+  ]
+}

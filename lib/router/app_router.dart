@@ -10,9 +10,12 @@ import '../features/auth/session_provider.dart';
 import '../features/home/screens/home_screen.dart';
 import '../features/playground/screens/playground_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
+import '../features/reference/screens/favorites_screen.dart';
+import '../features/reference/screens/history_screen.dart';
 import '../features/reference/screens/reference_screen.dart';
 import '../features/reference/screens/category_articles_screen.dart';
 import '../features/reference/screens/article_screen.dart';
+import '../features/search/screens/search_screen.dart';
 
 /// Чистая функция auth-guard: только (location, AuthState) → маршрут
 /// перехода либо null (продолжить навигацию).
@@ -123,6 +126,21 @@ GoRouter buildAppRouter(SessionProvider session, {String? initialLocation}) {
                 path: AppConstants.routeArticle,
                 builder: (context, state) =>
                     ArticleScreen(articleId: state.pathParameters['id']!),
+              ),
+              // P8/P9: поиск, избранное и история — тоже на уровне ветки
+              // («вкладка-независимые», нижняя навигация остаётся). Все три
+              // НЕ в публичном allowlist → закрыты guard'ом автоматически.
+              GoRoute(
+                path: AppConstants.routeSearch,
+                builder: (context, state) => const SearchScreen(),
+              ),
+              GoRoute(
+                path: AppConstants.routeFavorites,
+                builder: (context, state) => const FavoritesScreen(),
+              ),
+              GoRoute(
+                path: AppConstants.routeHistory,
+                builder: (context, state) => const HistoryScreen(),
               ),
             ],
           ),

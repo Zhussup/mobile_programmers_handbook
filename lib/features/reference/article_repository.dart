@@ -16,10 +16,17 @@ import 'article_model.dart';
 /// иммутабельны; пользовательские данные живут в SQLite (favorites/history).
 class ArticleRepository {
   /// Список файлов контента (см. README: имена файлов и category.id).
+  ///
+  /// Полный план: 5 категорий C++ + ветка Dart/Flutter. Производственный
+  /// путь ([loadFromAssets]) спокойно пропускает ещё не существующие
+  /// файлы — справочник стартует с того, что уже появилось (P8).
   static const List<String> contentFiles = [
     'cpp_syntax.json',
     'cpp_data_structures.json',
     'cpp_algorithms.json',
+    'cpp_stl.json',
+    'cpp_oop.json',
+    'dart_flutter.json',
   ];
 
   /// Каталог контента в ассетах (строго UTF-8 — README).
@@ -46,6 +53,7 @@ class ArticleRepository {
   final Map<String, ReferenceCategory> _categoriesById = {};
   final Map<String, Article> _articlesById = {};
   final Map<String, List<Article>> _articlesByCategory = {};
+  final Map<String, String> _articleCategoryIds = {};
   bool _loaded = false;
 
   /// Контент загружен и разобран.
@@ -116,6 +124,9 @@ class ArticleRepository {
       }
       articles.add(article);
       _articlesById[article.id] = article;
+      // Карта «статья → её категория» — для поиска (показ категории рядом
+      // с результатом, P8).
+      _articleCategoryIds[article.id] = category.id;
     }
 
     _categoriesById[category.id] = category;
@@ -144,4 +155,14 @@ class ArticleRepository {
 
   /// Статья по id по всему справочнику (null — нет такой статьи).
   Article? articleById(String articleId) => _articlesById[articleId];
+
+  /// Категория, которой принадлежит статья (null — нет такой статьи).
+  ///
+  /// Используется поиском (P8): результат поиска показывает категорию
+  /// рядом с заголовком (README: category.id — идентификаторы категорий).
+  ReferenceCategory? categoryOfArticle(String articleId) {
+    final categoryId = _articleCategoryIds[articleId];
+    if (categoryId == null) return null;
+    return _categoriesById[categoryId];
+  }
 }

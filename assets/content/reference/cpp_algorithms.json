@@ -220,6 +220,135 @@
           "text": "Любую линейную рекурсию можно переписать циклом: сумма цифр — while (n > 0) { ... }. Рекурсия ценна там, где данные ветвятся (деревья, файловая система), и проигрывает прямой итерации памятью стека."
         }
       ]
+    },
+    {
+      "id": "cpp_alg_min_max",
+      "title": "Минимум и максимум",
+      "summary": "Поиск наибольшего и наименьшего: ручной цикл с «текущим рекордом», std::min/max для пары и min/max_element для диапазона.",
+      "difficulty": "beginner",
+      "tags": [
+        "cpp",
+        "алгоритмы",
+        "минимум",
+        "максимум"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "«Самый-самый» — базовая учебная задача: лучший игрок, минимальная цена, максимум в оценках. Ручная идея проста: держим текущий рекорд (первый элемент) и обновляем его, когда встречаем лучший. То же готово в STL: std::min и std::max для пары значений, min_element/max_element для всего диапазона."
+        },
+        {
+          "type": "heading",
+          "text": "Три способа"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Ручной цикл: mn = data[0]; if (v < mn) mn = v; — работает с любым правилом сравнения",
+            "std::min(a, b), std::max(a, b) — для двух значений",
+            "std::min_element(begin, end) — итератор на наименьший; результат разыменовывают *",
+            "Индекс экстремума: max_element(...) - data.begin()",
+            "На пустом диапазоне min_element вернёт end() — разыменовать нельзя"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <algorithm>\n#include <iostream>\n#include <vector>\n\nint main() {\n    std::vector<int> data = {7, 2, 9, 4, 5};\n\n    int mn = data[0];\n    int mx = data[0];\n    for (int v : data) {\n        if (v < mn) mn = v;\n        if (v > mx) mx = v;\n    }\n    std::cout << \"min: \" << mn << \" max: \" << mx << std::endl;\n\n    std::cout << std::min(3, 8) << ' ' << std::max(3, 8) << std::endl;\n\n    auto lo = std::min_element(data.begin(), data.end());\n    auto hi = std::max_element(data.begin(), data.end());\n    std::cout << *lo << ' ' << *hi << ' ' << hi - data.begin() << std::endl;\n    return 0;\n}",
+          "output": "min: 2 max: 9\n3 8\n2 9 2",
+          "caption": "Ручной цикл, min/max для пары и итераторы min/max_element с разыменованием и вычислением индекса"
+        },
+        {
+          "type": "note",
+          "text": "Для структур сравнивайте по полю: min/max_element с компаратором «кто лучший по grade» найдёт лучшего студента. В C++ у max есть приём max({a, b, c}); std::minmax(a, b) возвращает пару (минимум, максимум) сразу. Ручная версия важна тем, что заодно находит ВТОРОЙ максимум — рекорд обновлять не всегда."
+        }
+      ]
+    },
+    {
+      "id": "cpp_alg_std_sort",
+      "title": "Сортировка: std::sort",
+      "summary": "Готовая сортировка: рост по умолчанию, убывание через greater, свой компаратор и сложность O(n log n).",
+      "difficulty": "intermediate",
+      "tags": [
+        "cpp",
+        "алгоритмы",
+        "сортировка",
+        "std::sort"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "std::sort из <algorithm> — сортировка «по-взрослому»: гибрид со сложностью O(n log n). Ей неважно, что лежит в диапазоне: числа, строки, структуры — порядок задаёт компаратор. По умолчанию это «меньше» через operator<, то есть возрастание."
+        },
+        {
+          "type": "heading",
+          "text": "Управление порядком"
+        },
+        {
+          "type": "list",
+          "items": [
+            "std::sort(v.begin(), v.end()) — возрастание; тип обязан иметь operator<",
+            "std::sort(v.begin(), v.end(), std::greater<int>()) — убывание",
+            "Свой критерий — обычная функция: bool byLength(const std::string& a, ...)",
+            "Компаратор — СТРОГОЕ «меньше»: писать a <= b — ошибка, sort может сломаться",
+            "std::stable_sort сохраняет взаимный порядок равных элементов"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <algorithm>\n#include <functional>\n#include <iostream>\n#include <string>\n#include <vector>\n\nbool byLength(const std::string& a, const std::string& b) {\n    return a.size() < b.size();\n}\n\nvoid show(const char* label, const std::vector<int>& v) {\n    std::cout << label;\n    bool head = true;\n    for (int x : v) {\n        if (!head) std::cout << ' ';\n        std::cout << x;\n        head = false;\n    }\n    std::cout << std::endl;\n}\n\nint main() {\n    std::vector<int> nums = {5, 2, 9, 1, 7};\n    std::sort(nums.begin(), nums.end());\n    show(\"asc: \", nums);\n\n    std::sort(nums.begin(), nums.end(), std::greater<int>());\n    show(\"desc: \", nums);\n\n    std::vector<std::string> words = {\"pear\", \"fig\", \"apple\"};\n    std::sort(words.begin(), words.end(), byLength);\n    std::cout << words[0] << ' ' << words[1] << ' ' << words[2] << std::endl;\n    return 0;\n}",
+          "output": "asc: 1 2 5 7 9\ndesc: 9 7 5 2 1\nfig pear apple",
+          "caption": "Три вызова sort: без компаратора, с greater для убывания и со своим правилом длины строк"
+        },
+        {
+          "type": "note",
+          "text": "Пузырёк (см. свою статью) — учебник сложности O(n^2); std::sort — рабочий инструмент. Для структур сортируйте либо по одному полю компаратором, либо складывайте данные в pair и полагайтесь на поочерёдное сравнение. Нестабильность sort означает: равные элементы могут поменяться местами — если порядок равных важен, нужен stable_sort."
+        }
+      ]
+    },
+    {
+      "id": "cpp_alg_accumulate",
+      "title": "Сумма и среднее: accumulate",
+      "summary": "Накопительные вычисления: сумма циклом и std::accumulate, среднее с приведением типов, произвольная операция (произведение).",
+      "difficulty": "intermediate",
+      "tags": [
+        "cpp",
+        "алгоритмы",
+        "сумма",
+        "numeric"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Накопление — повторяющийся сюжет: сумма, средний балл, произведение. Ручной цикл «обнулить счётчик, добавлять по элементу» работает всегда, но каждый раз пишется заново. std::accumulate из <numeric> делает это одной строкой: диапазон, начальное значение и операция сложения (или своя)."
+        },
+        {
+          "type": "heading",
+          "text": "Что важно помнить"
+        },
+        {
+          "type": "list",
+          "items": [
+            "std::accumulate(begin, end, 0) — сумма, начальное значение 0",
+            "Начальное значение задаёт и ТИП результата: 0 — целый, 0.0 — дробный",
+            "std::accumulate(begin, end, 1, std::multiplies<int>()) — накопление умножением",
+            "Среднее: static_cast<double>(sum) / size() — иначе целочисленное деление",
+            "Другие агрегаты из <algorithm>: count, min_element, max_element"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <algorithm>\n#include <functional>\n#include <iostream>\n#include <numeric>\n#include <vector>\n\nint main() {\n    std::vector<int> marks = {4, 5, 3, 5, 4};\n\n    int sum = 0;\n    for (int m : marks) {\n        sum += m;\n    }\n    std::cout << \"manual: \" << sum << std::endl;\n\n    int total = std::accumulate(marks.begin(), marks.end(), 0);\n    std::cout << \"accumulate: \" << total << std::endl;\n\n    double average = static_cast<double>(total) / marks.size();\n    std::cout << \"average: \" << average << std::endl;\n\n    int product = std::accumulate(marks.begin(), marks.end(), 1,\n                                  std::multiplies<int>());\n    std::cout << \"product: \" << product << std::endl;\n    return 0;\n}",
+          "output": "manual: 21\naccumulate: 21\naverage: 4.2\nproduct: 1200",
+          "caption": "Один и тот же результат циклом и accumulate; среднее — через static_cast, произведение — своя операция"
+        },
+        {
+          "type": "note",
+          "text": "Ловушка с типами: accumulate стартует с init и ведёт накопление в ЕГО типе — для vector<double> начинайте с 0.0, иначе дробная часть потеряется. Пустой контейнер суммой 0 (или 0.0) обрабатывается корректно — цикл ничего не добавит, делить только на размер не забудьте."
+        }
+      ]
     }
   ]
 }
