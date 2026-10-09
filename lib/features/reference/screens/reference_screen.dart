@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../core/constants/app_constants.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../reference_provider.dart';
 import '../widgets/category_card.dart';
@@ -9,7 +8,7 @@ import '../widgets/category_card.dart';
 /// Вкладка «Справочник» (P6): список категорий из JSON-контента.
 ///
 /// Данные — только из [ReferenceProvider] (id в маршруте — подводный камень
-/// №8 из плана). Переход: /reference/<categoryId> → список статей категории.
+/// №8 из плана). Переход: `/reference/<categoryId>` → список статей.
 class ReferenceScreen extends StatelessWidget {
   const ReferenceScreen({super.key});
 
@@ -72,7 +71,6 @@ class ReferenceScreen extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 10),
                 child: CategoryCard(
                   key: Key('reference-category-${category.id}'),
-                  keyPrefix: 'reference-category',
                   category: category,
                   articleCount: reference
                       .articlesForCategory(category.id)

@@ -1,3 +1,5 @@
+import 'dart:async' show unawaited;
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -7,13 +9,16 @@ import 'core/constants/app_constants.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/session_provider.dart';
 import 'features/profile/theme_provider.dart';
+import 'features/reference/article_repository.dart';
+import 'features/reference/reference_provider.dart';
 import 'router/app_router.dart';
 
 /// Корневой виджет приложения.
 ///
-/// Провайдеры: [SessionProvider] (восстановлен в main() до runApp) и
-/// [ThemeProvider]. Тема инициализируется ДО runApp — не мигает и сохраняется
-/// при перезапуске (подводный камень №1 из плана).
+/// Провайдеры: [SessionProvider] (восстановлен в main() до runApp),
+/// [ThemeProvider] и [ReferenceProvider] (контент справочника). Тема
+/// инициализируется ДО runApp — не мигает и сохраняется (подводный камень
+/// №1 из плана).
 class MobKursApp extends StatefulWidget {
   const MobKursApp({
     super.key,
@@ -21,6 +26,7 @@ class MobKursApp extends StatefulWidget {
     required this.initialThemeMode,
     required this.session,
     this.initialLocation,
+    this.referenceRepository,
   });
 
   /// Общий экземпляр SharedPreferences (загружен один раз в main()).
@@ -34,6 +40,13 @@ class MobKursApp extends StatefulWidget {
 
   /// Стартовый маршрут — параметр для виджет-тестов (в приложении — /splash).
   final String? initialLocation;
+
+  /// Репозиторий справочника.
+  ///
+  /// Production: null → обычный репозиторий (JSON из ассетов через
+  /// rootBundle). Тесты передают репозиторий из сырых строк
+  /// ([ArticleRepository.fromRaw]) — rootBundle IO недоступен в fake-async.
+  final ArticleRepository? referenceRepository;
 
   @override
   State<MobKursApp> createState() => _MobKursAppState();
@@ -58,6 +71,18 @@ class _MobKursAppState extends State<MobKursApp> {
             prefs: widget.prefs,
             initialMode: widget.initialThemeMode,
           ),
+        ),
+        // Справочник: контент грузится один раз при первом обращении.
+        // Тесты дают здесь готовый repository (уже разобранный fromRaw).
+        ChangeNotifierProvider<ReferenceProvider>(
+          create: (_) {
+            final provider = ReferenceProvider(
+              repository:
+                  widget.referenceRepository ?? ArticleRepository(),
+            );
+            unawaited(provider.load());
+            return provider;
+          },
         ),
       ],
       child: Consumer<ThemeProvider>(

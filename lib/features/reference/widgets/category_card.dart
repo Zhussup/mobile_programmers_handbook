@@ -16,7 +16,6 @@ class CategoryCard extends StatelessWidget {
     super.key,
     required this.category,
     required this.articleCount,
-    this.keyPrefix = 'category',
   });
 
   /// Категория (данные — всегда из провайдера, не из аргументов роута).
@@ -25,9 +24,6 @@ class CategoryCard extends StatelessWidget {
   /// Количество статей для подписи (русская плюрализация).
   final int articleCount;
 
-  /// Префикс test-ключа: `<keyPrefix>-<categoryId>`.
-  final String keyPrefix;
-
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -35,7 +31,6 @@ class CategoryCard extends StatelessWidget {
     return Card(
       margin: EdgeInsets.zero,
       child: InkWell(
-        key: Key('$keyPrefix-${category.id}'),
         borderRadius: BorderRadius.circular(12),
         onTap: () => context.push(AppConstants.categoryPath(category.id)),
         child: Padding(

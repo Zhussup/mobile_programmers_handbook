@@ -119,7 +119,6 @@ class HomeScreen extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 10),
                 child: CategoryCard(
                   key: Key('home-category-${category.id}'),
-                  keyPrefix: 'home-category',
                   category: category,
                   articleCount: reference
                       .articlesForCategory(category.id)

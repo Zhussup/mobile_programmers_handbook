@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/constants/app_constants.dart';
+import '../core/widgets/empty_state.dart';
 import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/register_screen.dart';
 import '../features/auth/screens/splash_screen.dart';
@@ -10,15 +11,19 @@ import '../features/home/screens/home_screen.dart';
 import '../features/playground/screens/playground_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
 import '../features/reference/screens/reference_screen.dart';
+import '../features/reference/screens/category_articles_screen.dart';
+import '../features/reference/screens/article_screen.dart';
 
 /// Чистая функция auth-guard: только (location, AuthState) → маршрут
 /// перехода либо null (продолжить навигацию).
 ///
 /// Правила:
-/// - authorized → прочь с /login, /register (иначе петля);
-///   сплэш не блокируется даже для вошедшего — он гарантированно отыгрывает
-///   таймер, затем сам ведёт на /home (context.go в SplashScreen);
-/// - guest → прочь с непубличных маршрутов на /login.
+/// - authorized → прочь с /login, /register (иначе петля); сплэш не
+///   блокируется даже для вошедшего — он гарантированно отыгрывает таймер,
+///   затем сам ведёт на /home (context.go в SplashScreen);
+/// - guest → прочь с непубличных маршрутов на /login. Новые приватные
+///   маршруты (/reference/:categoryId, /article/:id) закрыты автоматически:
+///   публичный набор фиксирован.
 String? authRedirect(String location, AuthState auth) {
   const public = {
     AppConstants.routeSplash,
@@ -40,8 +45,27 @@ String? authRedirect(String location, AuthState auth) {
   return public.contains(location) ? null : AppConstants.routeLogin;
 }
 
+/// Экран 404 (unmatched-маршруты): та же заглушка EmptyState — навигация
+/// на заведомо несуществующий адрес не роняет и не путает пользователя.
+class _RouteNotFoundScreen extends StatelessWidget {
+  const _RouteNotFoundScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Страница не найдена')),
+      body: const EmptyState(
+        key: Key('route-not-found'),
+        title: 'Страница не найдена',
+        message: 'Проверьте ссылку или вернитесь на вкладку «Главная».',
+        icon: Icons.search_off,
+      ),
+    );
+  }
+}
+
 /// Сборка GoRouter: сплэш, логин, регистрация + StatefulShellRoute с 4
-/// постоянными вкладками.
+/// постоянными вкладками; приватные маршруты — внутри ветка «Справочник».
 ///
 /// [session] — сессия для auth-guard; [initialLocation] — параметр для
 /// виджет-тестов (в приложении — /splash). refreshListenable не нужен:
@@ -52,6 +76,7 @@ GoRouter buildAppRouter(SessionProvider session, {String? initialLocation}) {
     initialLocation: initialLocation ?? AppConstants.routeSplash,
     redirect: (context, state) =>
         authRedirect(state.matchedLocation, session.state),
+    errorBuilder: (context, state) => const _RouteNotFoundScreen(),
     routes: [
       GoRoute(
         path: AppConstants.routeSplash,
@@ -76,11 +101,28 @@ GoRouter buildAppRouter(SessionProvider session, {String? initialLocation}) {
               ),
             ],
           ),
+          // Ветка «Справочник» + приватные маршруты внутри неё: категории →
+          // список статей → статья. Нижняя навигация остаётся видимой.
           StatefulShellBranch(
             routes: [
               GoRoute(
                 path: AppConstants.routeReference,
                 builder: (context, state) => const ReferenceScreen(),
+                routes: [
+                  GoRoute(
+                    path: ':categoryId',
+                    builder: (context, state) => CategoryArticlesScreen(
+                      categoryId: state.pathParameters['categoryId']!,
+                    ),
+                  ),
+                ],
+              ),
+              // Статья — на уровне ветки, чтобы открываться с любой вкладки
+              // (P9 — переход «Продолжить» с главной). Данные — по id.
+              GoRoute(
+                path: AppConstants.routeArticle,
+                builder: (context, state) =>
+                    ArticleScreen(articleId: state.pathParameters['id']!),
               ),
             ],
           ),
@@ -106,8 +148,9 @@ GoRouter buildAppRouter(SessionProvider session, {String? initialLocation}) {
   );
 }
 
-/// Оболочка вкладок: NavigationBar (нижняя навигация).
-/// Оформление и поведение вкладок будет доведено до финала в P5.
+/// Оболочка вкладок (P5): NavigationBar, русские подписи, иконки для
+/// активного/неактивного состояния; goBranch(initialLocation: ...) —
+/// повторный тап по активной вкладке возвращает на её корень.
 class _ShellScaffold extends StatelessWidget {
   const _ShellScaffold({required this.shell});
 
@@ -121,23 +164,23 @@ class _ShellScaffold extends StatelessWidget {
         selectedIndex: shell.currentIndex,
         onDestinationSelected: (index) =>
             shell.goBranch(index, initialLocation: index == shell.currentIndex),
-        destinations: [
-          const NavigationDestination(
+        destinations: const [
+          NavigationDestination(
             icon: Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home),
             label: 'Главная',
           ),
-          const NavigationDestination(
+          NavigationDestination(
             icon: Icon(Icons.menu_book_outlined),
             selectedIcon: Icon(Icons.menu_book),
             label: 'Справочник',
           ),
-          const NavigationDestination(
+          NavigationDestination(
             icon: Icon(Icons.code_outlined),
             selectedIcon: Icon(Icons.code),
             label: 'Песочница',
           ),
-          const NavigationDestination(
+          NavigationDestination(
             icon: Icon(Icons.person_outline),
             selectedIcon: Icon(Icons.person),
             label: 'Профиль',

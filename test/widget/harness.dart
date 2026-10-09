@@ -1,3 +1,5 @@
+import 'dart:io' show File;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -7,6 +9,7 @@ import 'package:mob_kurs/app.dart';
 import 'package:mob_kurs/core/db/app_database.dart';
 import 'package:mob_kurs/features/auth/auth_repository.dart';
 import 'package:mob_kurs/features/auth/session_provider.dart';
+import 'package:mob_kurs/features/reference/article_repository.dart';
 
 /// Тестовый каркас виджет-тестов: in-memory БД (sqflite_common_ffi) +
 /// SharedPreferences-моки + SessionProvider + MobKursApp.
@@ -56,9 +59,16 @@ class AppHarness {
   }
 
   /// Запуск приложения на заданном маршруте.
+  ///
+  /// [referenceRepository] — репозиторий справочника для экранов P6/P8/P9:
+  /// по умолчанию контент ЧИТАЕТСЯ С ДИСКА (dart:io, синхронно; вне
+  /// fake-async это допустимо), поэтому виджет-тесты идут по реальному
+  /// JSON; подменить контент можно, передав [ArticleRepository.fromRaw]
+  /// явно.
   Future<void> pumpApp(
     WidgetTester tester, {
     required String initialLocation,
+    ArticleRepository? referenceRepository,
   }) async {
     await tester.pumpWidget(
       MobKursApp(
@@ -66,8 +76,21 @@ class AppHarness {
         initialThemeMode: ThemeMode.light,
         session: session,
         initialLocation: initialLocation,
+        referenceRepository:
+            referenceRepository ?? _defaultReferenceRepository(),
       ),
     );
+  }
+
+  /// Синхронное чтение файлов контента с диска + разбор (fromRaw).
+  ///
+  /// rootBundle-IO недоступен внутри fake-async-зоны виджет-теста, поэтому
+  /// реальный контент подаётся так.
+  ArticleRepository _defaultReferenceRepository() {
+    return ArticleRepository.fromRaw([
+      for (final name in ArticleRepository.contentFiles)
+        File('assets/content/reference/$name').readAsStringSync(),
+    ]);
   }
 
   /// Нажать кнопку, чей обработчик ждёт реальной IO (SQLite ffi), и
