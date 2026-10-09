@@ -1,0 +1,86 @@
+name: mob_kurs
+description: "Мобильный справочник программиста с интерактивными примерами кода (курсовая ПМ07)."
+publish_to: 'none' # Приватный пакет; публикация в pub.dev не требуется.
+
+# Версия приложения: для курсовой достаточно дефолтной.
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.13.2
+
+# Зависимости строго по плану (раздел «Зависимости pubspec»).
+# flutter_markdown (discontinued), markdown_widget и highlight_selectable — запрещены планом.
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # Состояние: ChangeNotifier-провайдеры.
+  provider: ^6.1.2
+
+  # Навигация: go_router + StatefulShellRoute.
+  go_router: ^14.6.2
+
+  # Локальная БД (users, favorites, history, user_snippets).
+  sqflite: ^2.4.1
+
+  # Сессия и тема в shared_preferences.
+  shared_preferences: ^2.3.3
+
+  # Соль + sha256 для паролей.
+  crypto: ^3.0.6
+
+  # Подсветка кода (превью кода).
+  highlight: ^0.7.0
+  flutter_highlight: ^0.7.0 # Не публиковался 5 лет, чистый Dart — пин по плану.
+
+  # Редактор кода с живой подсветкой (песочница, P10).
+  flutter_code_editor: ^0.3.2
+
+  # Форматирование дат (дата регистрации в профиле и т.п.).
+  intl: ^0.20.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+
+  # Нативный splash (android) — генерируется из assets/icons/logo.png.
+  flutter_native_splash: ^2.4.4
+
+  # Иконка приложения (P14).
+  flutter_launcher_icons: ^0.14.3
+
+  # Подмена фабрики sqflite на desktop/в тестах (in-memory).
+  sqflite_common_ffi: ^2.3.4
+
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
+
+# The following section is specific to Flutter packages.
+flutter:
+
+  # Material Icons включены по умолчанию.
+  uses-material-design: true
+
+  assets:
+    - assets/icons/
+    - assets/content/reference/
+
+  # Шрифты не подключены — используются системные (Roboto/Noto).
+
+# Нативный splash (генерация: dart run flutter_native_splash:create).
+# Цвет #1E2A37 — тот же, что фирменный фон тем в app_theme.dart.
+# До Android 12 лого + название (название вшито в картинку), на Android 12+ — только лого
+# (ОС сама масштабирует в круглую маску).
+flutter_native_splash:
+  color: "#1E2A37"
+  image: assets/icons/splash.png
+  android_12:
+    color: "#1E2A37"
+    image: assets/icons/android12.png
+  android: true
+  ios: false
+  web: false

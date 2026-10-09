@@ -1,0 +1,46 @@
+# ===== Все Markdown-файлы, кроме README =====
+*.md
+!README.md
+
+# ===== Материалы задания (не исходники приложения) =====
+# фото роадмапа и критерии преподавателя; если захочешь закоммитить их — удали эти строки
+photo_*.jpg
+*.docx
+
+# ===== Dart / Flutter =====
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+generated_plugin_registrant.*
+
+# Android (основное дублируется в android/.gitignore из шаблона)
+android/.gradle/
+android/local.properties
+android/key.properties
+*.keystore.jks
+*.jks
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/App.framework
+ios/Flutter/Flutter.framework
+ios/Flutter/Generated.xcconfig
+
+# Логи и диагностика
+*.log
+coverage/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+runConfigurations.xml
+
+# ОС
+.DS_Store
+Thumbs.db

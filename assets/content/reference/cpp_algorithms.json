@@ -1,0 +1,225 @@
+{
+  "category": {
+    "id": "algorithms",
+    "title": "Алгоритмы",
+    "icon": "sort",
+    "description": "Управление ходом программы и базовые алгоритмы: ветвления, циклы, сортировка, поиск и рекурсия."
+  },
+  "articles": [
+    {
+      "id": "cpp_alg_conditions",
+      "title": "Условия: if / else и switch",
+      "summary": "Ветвление программы: if, else if, else, тернарный оператор и switch по константам.",
+      "difficulty": "beginner",
+      "tags": [
+        "cpp",
+        "алгоритмы",
+        "условия",
+        "ветвление"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Условный оператор выполняет блок кода, если условие истинно. Условие — любое выражение, приводимое к bool: ноль значит false, любое не нулевое значение — true. Для выбора одного варианта из списка точных значений удобнее switch."
+        },
+        {
+          "type": "heading",
+          "text": "Формы записи"
+        },
+        {
+          "type": "list",
+          "items": [
+            "if (условие) { ... } — действие при истинности условия",
+            "else if / else — альтернативные ветки, проверяются по порядку",
+            "условие ? a : b — тернарный оператор: значение одной строкой",
+            "switch (x) с case и break — переход по точному значению",
+            "В условии сравнение — ==, а не присваивание ="
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <string>\n\nint main() {\n    int score = 78;\n    char grade;\n    if (score >= 90) {\n        grade = 'A';\n    } else if (score >= 75) {\n        grade = 'B';\n    } else if (score >= 60) {\n        grade = 'C';\n    } else {\n        grade = 'F';\n    }\n    std::cout << \"score \" << score << \" -> grade \" << grade << std::endl;\n\n    std::string status = (score >= 60) ? \"pass\" : \"fail\";\n    std::cout << status << std::endl;\n    return 0;\n}",
+          "output": "score 78 -> grade B\npass",
+          "caption": "Диапазоны проверяются от большего к меньшему; тернарный оператор — короткая запись if/else"
+        },
+        {
+          "type": "note",
+          "text": "В switch без break выполнение «проваливается» в следующий case (fall-through) — часто это ошибка. switch работает по целочисленным и перечисляемым значениям с константами в case; для проверки диапазонов остаётся цепочка if / else if."
+        }
+      ]
+    },
+    {
+      "id": "cpp_alg_loops",
+      "title": "Циклы: for, while, do-while",
+      "summary": "Повтор действий: счётный for, условный while, do-while с проверкой после тела, break и continue.",
+      "difficulty": "beginner",
+      "tags": [
+        "cpp",
+        "алгоритмы",
+        "циклы",
+        "итерации"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Цикл повторяет блок кода, пока условие истинно. for — когда число повторений известно заранее (счётчик, обход массива); while проверяет условие перед телом; do-while проверяет после тела, поэтому выполняется минимум один раз."
+        },
+        {
+          "type": "heading",
+          "text": "Какой цикл выбирать"
+        },
+        {
+          "type": "list",
+          "items": [
+            "for (инициал.; условие; шаг) — счётчики и обход массивов",
+            "while (условие) — повторять, пока истинно; может не выполниться ни разу",
+            "do { ... } while (условие); — минимум одно выполнение (меню, повторный ввод)",
+            "break — немедленный выход из цикла; continue — переход к следующей итерации",
+            "while (true) допустим, если внутри есть break по условию выхода"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n\nint main() {\n    int sum = 0;\n    for (int i = 1; i <= 5; i++) {\n        sum += i;\n    }\n    std::cout << \"for sum: \" << sum << std::endl;\n\n    int n = 40;\n    int steps = 0;\n    while (n > 1) {\n        n = n / 2;\n        steps++;\n    }\n    std::cout << \"while steps: \" << steps << std::endl;\n\n    int counter = 0;\n    do {\n        counter++;\n    } while (counter < 3);\n    std::cout << \"do-while counter: \" << counter << std::endl;\n    return 0;\n}",
+          "output": "for sum: 15\nwhile steps: 5\ndo-while counter: 3",
+          "caption": "Три формы цикла: сумма счётчиком for, деление пополам while и do-while, гарантировавшее один проход"
+        },
+        {
+          "type": "note",
+          "text": "Переменная-счётчик, объявленная в заголовке for, живёт только внутри цикла. Если тело цикла никогда не меняет значение, влияющее на условие, цикл станет бесконечным — следите, что условие выхода достижимо."
+        }
+      ]
+    },
+    {
+      "id": "cpp_alg_bubble_sort",
+      "title": "Сортировка пузырьком",
+      "summary": "Учебная сортировка обменами: сравнение соседних элементов, проходы по массиву и досрочный выход по флагу.",
+      "difficulty": "intermediate",
+      "tags": [
+        "cpp",
+        "алгоритмы",
+        "сортировка",
+        "сложность"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Пузырёк многократно проходит по массиву и меняет местами соседние элементы, если левый больше правого. За каждый проход максимальный из неупорядоченных элементов «всплывает» в конец массива. Сложность — O(n^2), поэтому в реальном коде применяют std::sort, но пузырёк учит сравнивать, обменивать и ограничивать проходы."
+        },
+        {
+          "type": "heading",
+          "text": "Как это работает"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Внешний цикл — проходы по массиву: хватает n - 1 проходов",
+            "Внутренний — сравнение соседей arr[j] и arr[j + 1] до границы n - 1 - i",
+            "Обмен через временную переменную (или std::swap)",
+            "Флаг swapped: за проход не было обменов — массив уже упорядочен, выходим",
+            "Оценки: лучший случай O(n) (уже отсортирован), худший O(n^2)"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <vector>\n\nint main() {\n    std::vector<int> data = {5, 2, 9, 1, 7};\n    int n = data.size();\n\n    for (int i = 0; i < n - 1; i++) {\n        bool swapped = false;\n        for (int j = 0; j < n - 1 - i; j++) {\n            if (data[j] > data[j + 1]) {\n                int tmp = data[j];\n                data[j] = data[j + 1];\n                data[j + 1] = tmp;\n                swapped = true;\n            }\n        }\n        if (!swapped) {\n            break;\n        }\n    }\n\n    bool first = true;\n    for (int v : data) {\n        if (!first) std::cout << ' ';\n        std::cout << v;\n        first = false;\n    }\n    std::cout << std::endl;\n    return 0;\n}",
+          "output": "1 2 5 7 9",
+          "caption": "Соседние сравнения с обменами; флаг swapped даёт досрочный выход на 4-м проходе"
+        },
+        {
+          "type": "note",
+          "text": "Так же просто устроены сортировки выбором и вставкой — обе O(n^2) и частые гости в заданиях. Готовый эффективный вариант — std::sort(data.begin(), data.end()) из <algorithm> со сложностью O(n log n)."
+        }
+      ]
+    },
+    {
+      "id": "cpp_alg_binary_search",
+      "title": "Бинарный поиск",
+      "summary": "Поиск в отсортированном массиве пополам: O(log n), границы lo/hi, вычисление середины без переполнения.",
+      "difficulty": "intermediate",
+      "tags": [
+        "cpp",
+        "алгоритмы",
+        "поиск",
+        "сложность"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Бинарный поиск работает только по отсортированному массиву: смотрим элемент в середине диапазона — если он меньше цели, отбрасываем левую половину, если больше — правую. Диапазон сужается вдвое на каждом шаге: для 1000 элементов хватает примерно 10 сравнений. Сложность — O(log n)."
+        },
+        {
+          "type": "heading",
+          "text": "Условия и границы"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Массив обязан быть отсортированным — иначе результат не имеет смысла",
+            "Границы: lo = 0, hi = n - 1; пока lo <= hi, середина ещё не найдена",
+            "mid = lo + (hi - lo) / 2 — безопасная середина; сумма lo + hi может переполниться",
+            "Сдвиг: если a[mid] < цели — lo = mid + 1, иначе hi = mid - 1",
+            "lo > hi — элемента в массиве нет"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <vector>\n\nint binarySearch(const std::vector<int>& arr, int target) {\n    int lo = 0;\n    int hi = arr.size() - 1;\n    while (lo <= hi) {\n        int mid = lo + (hi - lo) / 2;\n        if (arr[mid] == target) {\n            return mid;\n        } else if (arr[mid] < target) {\n            lo = mid + 1;\n        } else {\n            hi = mid - 1;\n        }\n    }\n    return -1;\n}\n\nint main() {\n    std::vector<int> data = {1, 3, 5, 7, 9, 11};\n    std::cout << \"find 9: index \" << binarySearch(data, 9) << std::endl;\n    std::cout << \"find 4: index \" << binarySearch(data, 4) << std::endl;\n    return 0;\n}",
+          "output": "find 9: index 4\nfind 4: index -1",
+          "caption": "Девятка найдена за 2 шага, отсутствующая четвёрка подтверждена отсутствием за 3"
+        },
+        {
+          "type": "note",
+          "text": "В STL такие функции уже есть: std::binary_search («есть ли элемент»), std::lower_bound и std::upper_bound из <algorithm>. Написать цикл руками — типовое требование на лабораторных, пользоваться готовым — норма в проекте."
+        }
+      ]
+    },
+    {
+      "id": "cpp_alg_recursion",
+      "title": "Рекурсия",
+      "summary": "Функция, вызывающая саму себя: база остановки, шаг к меньшей подзадаче и цена стека вызовов.",
+      "difficulty": "intermediate",
+      "tags": [
+        "cpp",
+        "алгоритмы",
+        "функции",
+        "рекурсия"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Рекурсия — приём, когда функция вызывает сама себя для подзадачи меньшего размера. Обязательны две части: база — простейший случай, решаемый без вызова, и шаг — сведение задачи к меньшей. Каждый вызов занимает кадр в стеке вызовов: без базы или при слишком большой глубине стек переполнится."
+        },
+        {
+          "type": "heading",
+          "text": "Как читать рекурсивную функцию"
+        },
+        {
+          "type": "list",
+          "items": [
+            "База: if (n <= 1) return 1; — случай решается напрямую",
+            "Шаг: return n * factorial(n - 1); — задача сводится к меньшей",
+            "Развернуть: factorial(4) = 4 * fact(3) = 4 * 3 * fact(2) = ... = 24",
+            "Двойной вызов в одной ветке (Фибоначчи) даёт «дерево» и пересчёт значений без запоминания",
+            "Рекурсия выигрывает там, где задача сама ветвится: обход дерева, перебор вариантов"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n\nlong long factorial(int n) {\n    if (n <= 1) return 1;\n    return n * factorial(n - 1);\n}\n\nint digitSum(int n) {\n    if (n == 0) return 0;\n    return n % 10 + digitSum(n / 10);\n}\n\nint main() {\n    std::cout << \"factorial(5) = \" << factorial(5) << std::endl;\n    std::cout << \"digitSum(927) = \" << digitSum(927) << std::endl;\n    return 0;\n}",
+          "output": "factorial(5) = 120\ndigitSum(927) = 18",
+          "caption": "Две рекурсивные функции: факториал со «сверткой» вычислений и сумма цифр числа"
+        },
+        {
+          "type": "note",
+          "text": "Любую линейную рекурсию можно переписать циклом: сумма цифр — while (n > 0) { ... }. Рекурсия ценна там, где данные ветвятся (деревья, файловая система), и проигрывает прямой итерации памятью стека."
+        }
+      ]
+    }
+  ]
+}
