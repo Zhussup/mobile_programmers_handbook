@@ -269,4 +269,39 @@ void main() {
       expect(find.byKey(const Key('snippet-not-found')), findsOneWidget);
     },
   );
+
+  testWidgets(
+    'подводный камень №9: затухание правого края только при переполнении',
+    timeout: t,
+    (tester) async {
+      await openPlayground(tester);
+      await tester.tap(find.byKey(const Key('playground-fab')));
+      await tester.pumpAndSettle();
+      expect(find.byType(SnippetEditorScreen), findsOneWidget);
+
+      // Пустой/короткий код — поле не переполнено: затухания нет.
+      await tester.enterText(
+        find.byKey(const Key('snippet-code-editor')),
+        'int a;',
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('snippet-code-fade')), findsNothing);
+
+      // Строка длиннее ширины кодовой зоны — затухание появилось.
+      await tester.enterText(
+        find.byKey(const Key('snippet-code-editor')),
+        '// ${'x' * 200}',
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('snippet-code-fade')), findsOneWidget);
+
+      // Снова короткий код — затухание исчезло.
+      await tester.enterText(
+        find.byKey(const Key('snippet-code-editor')),
+        'ok',
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('snippet-code-fade')), findsNothing);
+    },
+  );
 }

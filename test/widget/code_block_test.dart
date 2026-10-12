@@ -98,4 +98,18 @@ void main() {
     await tester.pumpWidget(wrap(const CodeBlock(code: 'int x;')));
     expect(find.text('C++'), findsOneWidget);
   });
+
+  testWidgets(
+    'подводный камень №9: затухание правого края только при переполнении',
+    (tester) async {
+      // Короткий код — поле не переполнено: затухания нет.
+      await tester.pumpWidget(wrap(const CodeBlock(code: 'int x;')));
+      expect(find.byKey(const Key('article-code-fade')), findsNothing);
+
+      // Самая длинная строка не влезает (800px тест-поверхности): затухание.
+      final longLine = '// ${'x' * 250}';
+      await tester.pumpWidget(wrap(CodeBlock(code: longLine)));
+      expect(find.byKey(const Key('article-code-fade')), findsOneWidget);
+    },
+  );
 }

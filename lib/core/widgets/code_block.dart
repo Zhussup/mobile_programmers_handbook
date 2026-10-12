@@ -5,6 +5,7 @@ import 'package:flutter_highlight/themes/atom-one-dark.dart';
 import 'package:flutter_highlight/themes/atom-one-light.dart';
 
 import 'app_snackbar.dart';
+import 'code_overflow_fade.dart';
 
 /// Блок кода статьи (P6) на базе `flutter_highlight`.
 ///
@@ -75,14 +76,21 @@ class _CodeBlockState extends State<CodeBlock> {
 
     // Длинные строки кода прокручиваются по горизонтали: HighlightView
     // рисует RichText без переноса — скролл вместо ломаного переноса.
-    final codeArea = SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.fromLTRB(6, 10, 6, 12),
-      child: HighlightView(
-        widget.code,
-        language: widget.language,
-        theme: highlightTheme,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
+    // Затухание правого края сигнализирует переполнение (подводный камень
+    // №9, как в редакторе песочницы).
+    final codeArea = CodeOverflowFade(
+      code: widget.code,
+      fade: highlightTheme['root']?.backgroundColor ?? scheme.surface,
+      fadeKey: 'article-code-fade',
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(6, 10, 6, 12),
+        child: HighlightView(
+          widget.code,
+          language: widget.language,
+          theme: highlightTheme,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+        ),
       ),
     );
 

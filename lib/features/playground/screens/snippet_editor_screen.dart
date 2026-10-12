@@ -9,6 +9,7 @@ import 'package:highlight/languages/dart.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/widgets/app_snackbar.dart';
+import '../../../core/widgets/code_overflow_fade.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../playground_draft_provider.dart';
 import '../snippet_model.dart';
@@ -77,7 +78,15 @@ class _SnippetEditorScreenState extends State<SnippetEditorScreen> {
   @override
   void initState() {
     super.initState();
+    // Перестраиваем экран при движении курсора/наборе: затухание правого
+    // края (переполнение по горизонтали) должно исчезать/появляться вовремя.
+    _codeController.addListener(_onCodeChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) => _initStep());
+  }
+
+  /// Перестройка на изменение текста/курсора (пересчёт переполнения).
+  void _onCodeChanged() {
+    if (mounted) setState(() {});
   }
 
   @override
@@ -168,6 +177,7 @@ class _SnippetEditorScreenState extends State<SnippetEditorScreen> {
 
   @override
   void dispose() {
+    _codeController.removeListener(_onCodeChanged);
     _codeController.dispose();
     _titleController.dispose();
     _outputController.dispose();
@@ -358,20 +368,31 @@ class _SnippetEditorScreenState extends State<SnippetEditorScreen> {
               // --- Редактор кода (живая подсветка) ---
               Text('Код', style: theme.textTheme.titleSmall),
               const SizedBox(height: 8),
-              CodeTheme(
-                data: CodeThemeData(styles: codeStyles),
-                child: CodeField(
-                  key: const Key('snippet-code-editor'),
-                  controller: _codeController,
-                  minLines: 6,
-                  // Подводный камень №5: maxLines: null — высота растёт под
-                  // содержимое, кнопка «Сохранить» доступна при скролле.
-                  maxLines: null,
-                  wrap: false,
-                  textStyle: const TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 13,
-                    height: 1.3,
+              // Затухание правого края при переполнении (подводный камень
+              // №9): цвет — фон темы подсветки редактора (у CodeField
+              // собственный фон, тёмный/светлый, не как у карточек).
+              CodeOverflowFade(
+                code: _codeController.text,
+                fade:
+                    codeStyles['root']?.backgroundColor ??
+                    (dark ? const Color(0xFF282C34) : const Color(0xFFFAFAFA)),
+                fadeKey: 'snippet-code-fade',
+                residualAllowance: 96,
+                child: CodeTheme(
+                  data: CodeThemeData(styles: codeStyles),
+                  child: CodeField(
+                    key: const Key('snippet-code-editor'),
+                    controller: _codeController,
+                    minLines: 6,
+                    // Подводный камень №5: maxLines: null — высота растёт
+                    // под содержимое, «Сохранить» доступна при скролле.
+                    maxLines: null,
+                    wrap: false,
+                    textStyle: const TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 13,
+                      height: 1.3,
+                    ),
                   ),
                 ),
               ),
