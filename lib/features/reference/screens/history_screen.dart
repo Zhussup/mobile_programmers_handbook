@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/offline_banner.dart';
 import '../history_provider.dart';
 
 /// Экран «История» `/history` (P9): топ-20 просмотренных статей + кнопка
@@ -73,42 +74,55 @@ class HistoryScreen extends StatelessWidget {
         ],
       ),
       body: SafeArea(
-        child: history.entries.isEmpty
-            ? const Center(
-                child: EmptyState(
-                  key: Key('history-empty'),
-                  title: 'История пуста',
-                  message:
-                      'После чтения статей здесь появится '
-                      '«Недавно смотрели».',
-                  icon: Icons.history,
-                ),
-              )
-            : ListView(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: Text(
-                      'Недавно смотрели',
-                      key: const Key('history-section-title'),
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: scheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                  for (final entry in history.entries)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: _HistoryCard(
-                        key: Key('history-entry-${entry.article.id}'),
-                        entry: entry,
-                      ),
-                    ),
-                ],
+        child: Column(
+          children: [
+            if (history.offline)
+              const Padding(
+                padding: EdgeInsets.fromLTRB(16, 16, 16, 0),
+                child: OfflineBanner(),
               ),
+            Expanded(
+              child: history.entries.isEmpty
+                  ? const Center(
+                      child: EmptyState(
+                        key: Key('history-empty'),
+                        title: 'История пуста',
+                        message:
+                            'После чтения статей здесь появится '
+                            '«Недавно смотрели».',
+                        icon: Icons.history,
+                      ),
+                    )
+                  : ListView(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: Text(
+                            'Недавно смотрели',
+                            key: const Key('history-section-title'),
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                        for (final entry in history.entries)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: _HistoryCard(
+                              key: Key(
+                                'history-entry-${entry.article.id}',
+                              ),
+                              entry: entry,
+                            ),
+                          ),
+                      ],
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }

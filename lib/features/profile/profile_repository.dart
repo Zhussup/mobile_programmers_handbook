@@ -6,6 +6,7 @@ import '../../core/db/app_database.dart';
 import '../../core/utils/hash_utils.dart';
 import '../../core/utils/user_uniqueness.dart';
 import '../auth/user_model.dart';
+import 'profile_data_source.dart';
 
 /// Русская ошибка изменяемого профиля для UI: сообщение + поле формы
 /// (отличается от [AuthException] тем, что умеет ссылаться на старый
@@ -30,7 +31,7 @@ enum ProfileField { username, email, oldPassword }
 ///
 /// Уникальность username/email — общий хелпер [UserUniqueness] (NOCASE для
 /// ASCII + ручная кириллица в Дарте), исключая самого пользователя.
-class ProfileRepository {
+class ProfileRepository implements ProfileDataSource {
   /// Репозиторий поверх открытой БД ([AppDatabase.instance]).
   const ProfileRepository({required this.db});
 
@@ -43,6 +44,7 @@ class ProfileRepository {
   /// Уникальность — без учёта регистра (в т.ч. кириллицы), свой же текущий
   /// профиль конфликтом НЕ считается ([UserUniqueness.findConflicts] с
   /// excludeUserId). Возвращает обновлённую [UserModel].
+  @override
   Future<UserModel> updateProfile(
     int userId, {
     String? username,
@@ -111,6 +113,7 @@ class ProfileRepository {
 
   /// Изменение цвета аватара (палитра из AppConstants.avatarPalette).
   /// Возвращает обновлённую [UserModel].
+  @override
   Future<UserModel> updateAvatarColor(int userId, String colorHex) async {
     final rowsUpdated = await db.update(
       AppDbTables.users,
@@ -130,6 +133,7 @@ class ProfileRepository {
   ///
   /// Неверный старый пароль → [ProfileException] с полем
   /// [ProfileField.oldPassword] — экран подсвечивает поле inline.
+  @override
   Future<void> changePassword({
     required int userId,
     required String oldPassword,
@@ -167,6 +171,7 @@ class ProfileRepository {
   }
 
   /// Строка пользователя по id → [UserModel] (null — записи нет).
+  @override
   Future<UserModel?> getUserRow(int userId) async {
     final rows = await db.query(
       AppConstants.tableUsers,

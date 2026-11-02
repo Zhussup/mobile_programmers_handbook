@@ -2,6 +2,7 @@ import 'package:sqflite/sqflite.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/db/app_database.dart';
+import 'snippet_data_source.dart';
 import 'snippet_model.dart';
 
 /// Репозиторий сниппетов песочницы (P10): таблица `user_snippets`.
@@ -11,15 +12,20 @@ import 'snippet_model.dart';
 /// logout ничего не удаляет). SQL-запросы строго параметризованные, имена
 /// таблиц — константы [AppDbTables] (пользовательский ввод в SQL не
 /// подставляется).
-class SnippetRepository {
+class SnippetRepository implements SnippetDataSource {
   /// Репозиторий поверх открытой БД ([AppDatabase.instance]).
   const SnippetRepository({required this.db});
 
   /// Открытая база.
   final Database db;
 
+  /// Локальные данные — не кэш API (баннер офлайна не нужен).
+  @override
+  bool get servedFromCache => false;
+
   /// Список сниппетов пользователя: свежие изменения раньше
   /// (ORDER BY updated_at DESC, id DESC — id как тайбрейк).
+  @override
   Future<List<Snippet>> listForUser(int userId) async {
     final rows = await db.query(
       AppConstants.tableUserSnippets,
@@ -32,6 +38,7 @@ class SnippetRepository {
 
   /// Создание сниппета: INSERT (created_at = updated_at = сейчас) и чтение
   /// готовой модели. Id присваивает БД (AUTOINCREMENT).
+  @override
   Future<Snippet> create({
     required int userId,
     required String title,
@@ -67,6 +74,7 @@ class SnippetRepository {
 
   /// Чтение одного сниппета ПОЛЬЗОВАТЕЛЯ по id (null — нет/чужой сниппет:
   /// ограничение `user_id = ?` в WHERE делает чужой неотличимым от отсутствия).
+  @override
   Future<Snippet?> getById(int userId, int id) async {
     final rows = await db.query(
       AppConstants.tableUserSnippets,
@@ -82,6 +90,7 @@ class SnippetRepository {
   ///
   /// Ограничение `user_id = ?` в WHERE: чужой сниппет не затрагивается
   /// (возвращается null — «не найдено у этого пользователя»).
+  @override
   Future<Snippet?> update({
     required int userId,
     required int id,
@@ -110,6 +119,7 @@ class SnippetRepository {
   /// повторное удаление и чужой сниппет — no-op.
   ///
   /// Возвращает true, если строка реально удалена.
+  @override
   Future<bool> delete(int userId, int id) async {
     final rowsDeleted = await db.delete(
       AppConstants.tableUserSnippets,
@@ -117,6 +127,35 @@ class SnippetRepository {
       whereArgs: [userId, id],
     );
     return rowsDeleted > 0;
+  }
+
+  /// Полная замена кэша сниппетов пользователя успешным ответом API.
+  Future<void> replaceForUser(int userId, List<Snippet> snippets) async {
+    await db.transaction((txn) async {
+      await txn.delete(
+        AppConstants.tableUserSnippets,
+        where: 'user_id = ?',
+        whereArgs: [userId],
+      );
+      final batch = txn.batch();
+      for (final snippet in snippets) {
+        batch.insert(
+          AppConstants.tableUserSnippets,
+          {'id': snippet.id, ...snippet.toMap()},
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+      await batch.commit(noResult: true);
+    });
+  }
+
+  /// Вставка/обновление одной записи кэша (id — серверный).
+  Future<void> upsert(Snippet snippet) async {
+    await db.insert(
+      AppConstants.tableUserSnippets,
+      {'id': snippet.id, ...snippet.toMap()},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 }
 

@@ -25,7 +25,11 @@ class AppDatabase {
   static const String dbName = 'mob_kurs.db';
 
   /// Версия схемы БД (onCreate / onUpgrade миграции).
-  static const int dbVersion = 1;
+  ///
+  /// v2 (КР_2_2): добавлены таблицы кэша контента API
+  /// (`cache_categories`, `cache_articles`). Пользовательские таблицы не
+  /// меняются — миграция только создаёт недостающие таблицы.
+  static const int dbVersion = 2;
 
   Database? _db;
 
@@ -53,7 +57,8 @@ class AppDatabase {
       options: OpenDatabaseOptions(
         version: dbVersion,
         onCreate: onCreate,
-        // Схема v1: миграций пока нет, onUpgrade появится в семестре 2.
+        // v2: onCreate идемпотентен (CREATE TABLE IF NOT EXISTS), поэтому
+        // onUpgrade создаёт недостающие таблицы кэша, не трогая данные.
         onUpgrade: (db, oldVersion, newVersion) async =>
             onCreate(db, newVersion),
       ),
@@ -96,14 +101,16 @@ class AppDatabase {
     await batch.commit(noResult: true);
   }
 
-  /// Все CREATE-запросы схемы v1 (единым батчем).
+  /// Все CREATE-запросы схемы v2 (единым батчем).
   ///
+  /// Все запросы идемпотентны (`IF NOT EXISTS`): повторный onCreate при
+  /// миграции лишь добавляет недостающие таблицы и не удаляет данные.
   /// Имена/ключи — из AppConstants; запросы параметризованные, идентификаторы
   /// таблиц константные значения, не пользовательский ввод.
   static void createSchema(Batch batch) {
     // Пользователи: username и email уникальны БЕЗ учёта регистра.
     batch.execute('''
-        CREATE TABLE ${AppDbTables.users} (
+        CREATE TABLE IF NOT EXISTS ${AppDbTables.users} (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           username TEXT NOT NULL UNIQUE COLLATE NOCASE,
           email TEXT NOT NULL UNIQUE COLLATE NOCASE,
@@ -116,7 +123,7 @@ class AppDatabase {
 
     // Избранное: статья задаётся строковым id из JSON-контента.
     batch.execute('''
-        CREATE TABLE ${AppDbTables.favorites} (
+        CREATE TABLE IF NOT EXISTS ${AppDbTables.favorites} (
           user_id INTEGER NOT NULL,
           article_id TEXT NOT NULL,
           created_at TEXT NOT NULL,
@@ -126,7 +133,7 @@ class AppDatabase {
 
     // История просмотров: топ-20 по паре (user_id, viewed_at).
     batch.execute('''
-        CREATE TABLE ${AppDbTables.history} (
+        CREATE TABLE IF NOT EXISTS ${AppDbTables.history} (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           user_id INTEGER NOT NULL,
           article_id TEXT NOT NULL,
@@ -134,13 +141,13 @@ class AppDatabase {
         )
       ''');
     batch.execute(
-      'CREATE INDEX ${AppDbTables.idxHistoryUserViewed} '
+      'CREATE INDEX IF NOT EXISTS ${AppDbTables.idxHistoryUserViewed} '
       'ON ${AppDbTables.history} (user_id, viewed_at)',
     );
 
     // Сниппеты песочницы (CRUD — P10).
     batch.execute('''
-        CREATE TABLE ${AppDbTables.userSnippets} (
+        CREATE TABLE IF NOT EXISTS ${AppDbTables.userSnippets} (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           user_id INTEGER NOT NULL,
           title TEXT NOT NULL,
@@ -151,6 +158,29 @@ class AppDatabase {
           updated_at TEXT NOT NULL
         )
       ''');
+
+    // Кэш контента API (КР_2_2): последний успешный ответ /categories и
+    // /articles. payload — исходный JSON объекта (для повторного разбора).
+    batch.execute('''
+        CREATE TABLE IF NOT EXISTS ${AppDbTables.cacheCategories} (
+          id TEXT PRIMARY KEY,
+          payload TEXT NOT NULL,
+          sort_order INTEGER NOT NULL DEFAULT 0,
+          cached_at TEXT NOT NULL
+        )
+      ''');
+    batch.execute('''
+        CREATE TABLE IF NOT EXISTS ${AppDbTables.cacheArticles} (
+          id TEXT PRIMARY KEY,
+          category_id TEXT NOT NULL DEFAULT '',
+          payload TEXT NOT NULL,
+          cached_at TEXT NOT NULL
+        )
+      ''');
+    batch.execute(
+      'CREATE INDEX IF NOT EXISTS ${AppDbTables.idxCacheArticlesCategory} '
+      'ON ${AppDbTables.cacheArticles} (category_id)',
+    );
   }
 }
 
@@ -166,4 +196,9 @@ class AppDbTables {
   static const String history = 'history';
   static const String userSnippets = 'user_snippets';
   static const String idxHistoryUserViewed = 'idx_history_user_viewed';
+
+  /// Кэш контента API (только успешные ответы /categories и /articles).
+  static const String cacheCategories = 'cache_categories';
+  static const String cacheArticles = 'cache_articles';
+  static const String idxCacheArticlesCategory = 'idx_cache_articles_category';
 }

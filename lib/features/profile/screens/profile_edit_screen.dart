@@ -6,6 +6,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/validators.dart';
 import '../../../core/widgets/app_snackbar.dart';
 import '../../auth/session_provider.dart';
+import '../profile_data_source.dart';
 import '../profile_repository.dart';
 
 /// Экран редактирования профиля `/profile/edit` (P11): данные аккаунта
@@ -93,7 +94,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
     setState(() => _submitting = true);
     try {
-      final repository = context.read<ProfileRepository>();
+      final repository = context.read<ProfileDataSource>();
       if (dataChanged) {
         // Неизменённые поля передаются null — в запрос не попадают
         // (репозиторий сохраняет их прежними).
@@ -155,7 +156,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     if (user == null) return;
 
     try {
-      await context.read<ProfileRepository>().changePassword(
+      await context.read<ProfileDataSource>().changePassword(
         userId: user.id,
         oldPassword: _oldController.text,
         newPassword: _newController.text,

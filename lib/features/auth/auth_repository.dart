@@ -6,6 +6,7 @@ import '../../core/constants/app_constants.dart';
 import '../../core/db/app_database.dart';
 import '../../core/utils/hash_utils.dart';
 import '../../core/utils/user_uniqueness.dart';
+import 'auth_repository_base.dart';
 import 'user_model.dart';
 
 /// Понятная ошибка авторизации/регистрации для UI (русский текст).
@@ -32,7 +33,7 @@ enum AuthField { username, email }
 ///
 /// Данные пароля: хранится ТОЛЬКО солёный sha256 (hash + salt); открытый
 /// пароль нигде не сохраняется и не логируется.
-class AuthRepository {
+class AuthRepository implements AuthRepositoryBase {
   /// Репозиторий поверх открытой БД и prefs (сессия в `session_user_id`).
   const AuthRepository({required this.db, required this.prefs});
 
@@ -47,6 +48,7 @@ class AuthRepository {
   /// Дубликаты username/email (без учёта регистра, включая кириллицу)
   /// маппятся в [AuthException] с русским сообщением и привязкой к полю
   /// формы (проверка через общий хелпер [UserUniqueness.findConflicts]).
+  @override
   Future<UserModel> register({
     required String username,
     required String email,
@@ -82,6 +84,7 @@ class AuthRepository {
   ///
   /// При несуществующем пользователе или неверном пароле —
   /// [AuthException] «Неверный логин или пароль» (без раскрытия деталей).
+  @override
   Future<UserModel> login({
     required String loginOrEmail,
     required String password,
@@ -122,6 +125,7 @@ class AuthRepository {
   }
 
   /// Восстановление сессии: пользователь по id (или null, если записи нет).
+  @override
   Future<UserModel?> getUserById(int id) async {
     final rows = await db.query(
       AppConstants.tableUsers,
@@ -132,18 +136,26 @@ class AuthRepository {
   }
 
   /// Сохранить id пользователя в сессии (prefs).
+  @override
   Future<void> saveSession(int id) async {
     await prefs.setInt(AppConstants.prefSessionUserId, id);
   }
 
   /// Id пользователя из сессии (null — сессии нет).
+  @override
   int? get sessionId => prefs.getInt(AppConstants.prefSessionUserId);
 
   /// Выход: очищает ключ сессии в prefs и НИЧЕГО не удаляет из БД
   /// (все пользовательские данные — favorites / history / snippets — остаются).
+  @override
   Future<void> logout() async {
     await prefs.remove(AppConstants.prefSessionUserId);
   }
+
+  /// Локальная очистка сессии (401/403): в локальном режиме совпадает с
+  /// [logout] — серверного токена нет.
+  @override
+  Future<void> clearSession() => logout();
 
   // --- Внутренние методы ---
 

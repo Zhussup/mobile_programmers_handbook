@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900" role="img" aria-labelledby="title desc">
+<title id="title">ER-диаграмма базы данных приложения-справочника</title>
+<desc id="desc">Логическая модель базы данных SQLite: семь таблиц, первичные и внешние ключи, связи один-ко-многим и многие-ко-многим через таблицу favorites.</desc>
+<rect width="1400" height="900" fill="#FFFFFF"/>
+<style>text{font-family:"Times New Roman",Times,serif;} .entity-title{letter-spacing:.2px;}</style>
+<g class="entity" transform="translate(40,30)">
+<rect class="box" x="0" y="0" width="340" height="234" rx="8" fill="#FFFFFF" stroke="#2F4B6E" stroke-width="1.7"/>
+<path d="M0 8 Q0 0 8 0 H332 Q340 0 340 8 V44 H0 Z" fill="#D9E4F0" stroke="#2F4B6E" stroke-width="1.7"/>
+<text class="entity-title" x="170.0" y="29" text-anchor="middle" font-size="22" font-weight="bold" fill="#243447">categories · категории</text>
+<rect x="10" y="51" width="50" height="21" rx="5" fill="#F3E3B8"/>
+<text x="35.0" y="66" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7A5B12">PK</text>
+<text class="field" x="72" y="67" font-size="20" fill="#243447">id</text>
+<text class="ftype" x="328" y="67" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+<line x1="0" y1="80" x2="340" y2="80" stroke="#E1E7EF" stroke-width="1"/>
+<text class="field" x="72" y="103" font-size="20" fill="#243447">title</text>
+<text class="ftype" x="328" y="103" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+<line x1="0" y1="116" x2="340" y2="116" stroke="#E1E7EF" stroke-width="1"/>
+<text class="field" x="72" y="139" font-size="20" fill="#243447">description</text>
+<text class="ftype" x="328" y="139" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+<line x1="0" y1="152" x2="340" y2="152" stroke="#E1E7EF" stroke-width="1"/>
+<text class="field" x="72" y="175" font-size="20" fill="#243447">icon</text>
+<text class="ftype" x="328" y="175" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+<line x1="0" y1="188" x2="340" y2="188" stroke="#E1E7EF" stroke-width="1"/>
+<text class="field" x="72" y="211" font-size="20" fill="#243447">sort_order</text>
+<text class="ftype" x="328" y="211" text-anchor="end" font-size="18.5" fill="#52627A">INTEGER</text>
+</g>
+<g class="entity" transform="translate(430,30)">
+<rect class="box" x="0" y="0" width="340" height="378" rx="8" fill="#FFFFFF" stroke="#2F4B6E" stroke-width="1.7"/>
+<path d="M0 8 Q0 0 8 0 H332 Q340 0 340 8 V44 H0 Z" fill="#D9E4F0" stroke="#2F4B6E" stroke-width="1.7"/>
+<text class="entity-title" x="170.0" y="29" text-anchor="middle" font-size="22" font-weight="bold" fill="#243447">users · пользователи</text>
+<rect x="10" y="51" width="50" height="21" rx="5" fill="#F3E3B8"/>
+<text x="35.0" y="66" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7A5B12">PK</text>
+<text class="field" x="72" y="67" font-size="20" fill="#243447">id</text>
+<text class="ftype" x="328" y="67" text-anchor="end" font-size="18.5" fill="#52627A">INTEGER</text>
+<line x1="0" y1="80" x2="340" y2="80" stroke="#E1E7EF" stroke-width="1"/>
+<rect x="10" y="87" width="50" height="21" rx="5" fill="#DCEDDC"/>
+<text x="35.0" y="102" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#2F6B3A">UQ</text>
+<text class="field" x="72" y="103" font-size="20" fill="#243447">username</text>
+<text class="ftype" x="328" y="103" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+<line x1="0" y1="116" x2="340" y2="116" stroke="#E1E7EF" stroke-width="1"/>
+<rect x="10" y="123" width="50" height="21" rx="5" fill="#DCEDDC"/>
+<text x="35.0" y="138" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#2F6B3A">UQ</text>
+<text class="field" x="72" y="139" font-size="20" fill="#243447">email</text>
+<text class="ftype" x="328" y="139" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+<line x1="0" y1="152" x2="340" y2="152" stroke="#E1E7EF" stroke-width="1"/>
+<text class="field" x="72" y="175" font-size="20" fill="#243447">password_hash</text>
+<text class="ftype" x="328" y="175" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+<line x1="0" y1="188" x2="340" y2="188" stroke="#E1E7EF" stroke-width="1"/>
+<text class="field" x="72" y="211" font-size="20" fill="#243447">salt</text>
+<text class="ftype" x="328" y="211" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+<line x1="0" y1="224" x2="340" y2="224" stroke="#E1E7EF" stroke-width="1"/>
+<rect x="10" y="231" width="50" height="21" rx="5" fill="#F6E3CC"/>
+<text x="35.0" y="246" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#8A4B1A">CK</text>
+<text class="field" x="72" y="247" font-size="20" fill="#243447">role</text>
+<text class="ftype" x="328" y="247" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+<line x1="0" y1="260" x2="340" y2="260" stroke="#E1E7EF" stroke-width="1"/>
+<text class="field" x="72" y="283" font-size="20" fill="#243447">is_blocked</text>
+<text class="ftype" x="328" y="283" text-anchor="end" font-size="18.5" fill="#52627A">INTEGER</text>
+<line x1="0" y1="296" x2="340" y2="296" stroke="#E1E7EF" stroke-width="1"/>
+<text class="field" x="72" y="319" font-size="20" fill="#243447">avatar_color</text>
+<text class="ftype" x="328" y="319" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+<line x1="0" y1="332" x2="340" y2="332" stroke="#E1E7EF" stroke-width="1"/>
+<text class="field" x="72" y="355" font-size="20" fill="#243447">created_at</text>
+<text class="ftype" x="328" y="355" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+</g>
+<g class="entity" transform="translate(1060,30)">
+<rect class="box" x="0" y="0" width="320" height="198" rx="8" fill="#FFFFFF" stroke="#2F4B6E" stroke-width="1.7"/>
+<path d="M0 8 Q0 0 8 0 H312 Q320 0 320 8 V44 H0 Z" fill="#D9E4F0" stroke="#2F4B6E" stroke-width="1.7"/>
+<text class="entity-title" x="160.0" y="29" text-anchor="middle" font-size="22" font-weight="bold" fill="#243447">sessions · сессии</text>
+<rect x="10" y="51" width="50" height="21" rx="5" fill="#F3E3B8"/>
+<text x="35.0" y="66" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7A5B12">PK</text>
+<text class="field" x="72" y="67" font-size="20" fill="#243447">token</text>
+<text class="ftype" x="308" y="67" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+<line x1="0" y1="80" x2="320" y2="80" stroke="#E1E7EF" stroke-width="1"/>
+<rect x="10" y="87" width="50" height="21" rx="5" fill="#DCE6F2"/>
+<text x="35.0" y="102" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#2F4B7C">FK</text>
+<text class="field" x="72" y="103" font-size="20" fill="#243447">user_id</text>
+<text class="ftype" x="308" y="103" text-anchor="end" font-size="18.5" fill="#52627A">INTEGER</text>
+<line x1="0" y1="116" x2="320" y2="116" stroke="#E1E7EF" stroke-width="1"/>
+<text class="field" x="72" y="139" font-size="20" fill="#243447">created_at</text>
+<text class="ftype" x="308" y="139" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+<line x1="0" y1="152" x2="320" y2="152" stroke="#E1E7EF" stroke-width="1"/>
+<text class="field" x="72" y="175" font-size="20" fill="#243447">expires_at</text>
+<text class="ftype" x="308" y="175" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+</g>
+<g class="entity" transform="translate(40,310)">
+<rect class="box" x="0" y="0" width="340" height="414" rx="8" fill="#FFFFFF" stroke="#2F4B6E" stroke-width="1.7"/>
+<path d="M0 8 Q0 0 8 0 H332 Q340 0 340 8 V44 H0 Z" fill="#D9E4F0" stroke="#2F4B6E" stroke-width="1.7"/>
+<text class="entity-title" x="170.0" y="29" text-anchor="middle" font-size="22" font-weight="bold" fill="#243447">articles · статьи</text>
+<rect x="10" y="51" width="50" height="21" rx="5" fill="#F3E3B8"/>
+<text x="35.0" y="66" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7A5B12">PK</text>
+<text class="field" x="72" y="67" font-size="20" fill="#243447">id</text>
+<text class="ftype" x="328" y="67" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+<line x1="0" y1="80" x2="340" y2="80" stroke="#E1E7EF" stroke-width="1"/>
+<rect x="10" y="87" width="50" height="21" rx="5" fill="#DCE6F2"/>
+<text x="35.0" y="102" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#2F4B7C">FK</text>
+<text class="field" x="72" y="103" font-size="20" fill="#243447">category_id</text>
+<text class="ftype" x="328" y="103" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+<line x1="0" y1="116" x2="340" y2="116" stroke="#E1E7EF" stroke-width="1"/>
+<text class="field" x="72" y="139" font-size="20" fill="#243447">title</text>
+<text class="ftype" x="328" y="139" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+<line x1="0" y1="152" x2="340" y2="152" stroke="#E1E7EF" stroke-width="1"/>
+<text class="field" x="72" y="175" font-size="20" fill="#243447">summary</text>
+<text class="ftype" x="328" y="175" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+<line x1="0" y1="188" x2="340" y2="188" stroke="#E1E7EF" stroke-width="1"/>
+<rect x="10" y="195" width="50" height="21" rx="5" fill="#F6E3CC"/>
+<text x="35.0" y="210" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#8A4B1A">CK</text>
+<text class="field" x="72" y="211" font-size="20" fill="#243447">difficulty</text>
+<text class="ftype" x="328" y="211" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+<line x1="0" y1="224" x2="340" y2="224" stroke="#E1E7EF" stroke-width="1"/>
+<rect x="10" y="231" width="50" height="21" rx="5" fill="#E7E3F1"/>
+<text x="35.0" y="246" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#4B3F72">JSON</text>
+<text class="field" x="72" y="247" font-size="20" fill="#243447">tags</text>
+<text class="ftype" x="328" y="247" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+<line x1="0" y1="260" x2="340" y2="260" stroke="#E1E7EF" stroke-width="1"/>
+<rect x="10" y="267" width="50" height="21" rx="5" fill="#E7E3F1"/>
+<text x="35.0" y="282" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#4B3F72">JSON</text>
+<text class="field" x="72" y="283" font-size="20" fill="#243447">blocks_json</text>
+<text class="ftype" x="328" y="283" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+<line x1="0" y1="296" x2="340" y2="296" stroke="#E1E7EF" stroke-width="1"/>
+<text class="field" x="72" y="319" font-size="20" fill="#243447">is_published</text>
+<text class="ftype" x="328" y="319" text-anchor="end" font-size="18.5" fill="#52627A">INTEGER</text>
+<line x1="0" y1="332" x2="340" y2="332" stroke="#E1E7EF" stroke-width="1"/>
+<text class="field" x="72" y="355" font-size="20" fill="#243447">created_at</text>
+<text class="ftype" x="328" y="355" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+<line x1="0" y1="368" x2="340" y2="368" stroke="#E1E7EF" stroke-width="1"/>
+<text class="field" x="72" y="391" font-size="20" fill="#243447">updated_at</text>
+<text class="ftype" x="328" y="391" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+</g>
+<g class="entity" transform="translate(470,455)">
+<rect class="box" x="0" y="0" width="320" height="162" rx="8" fill="#FFFFFF" stroke="#2F4B6E" stroke-width="1.7"/>
+<path d="M0 8 Q0 0 8 0 H312 Q320 0 320 8 V44 H0 Z" fill="#D9E4F0" stroke="#2F4B6E" stroke-width="1.7"/>
+<text class="entity-title" x="160.0" y="29" text-anchor="middle" font-size="22" font-weight="bold" fill="#243447">favorites · избранное</text>
+<rect x="10" y="51" width="62" height="21" rx="5" fill="#E9DCC0"/>
+<text x="41.0" y="66" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#5E4A1A">PK/FK</text>
+<text class="field" x="72" y="67" font-size="20" fill="#243447">user_id</text>
+<text class="ftype" x="308" y="67" text-anchor="end" font-size="18.5" fill="#52627A">INTEGER</text>
+<line x1="0" y1="80" x2="320" y2="80" stroke="#E1E7EF" stroke-width="1"/>
+<rect x="10" y="87" width="62" height="21" rx="5" fill="#E9DCC0"/>
+<text x="41.0" y="102" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#5E4A1A">PK/FK</text>
+<text class="field" x="72" y="103" font-size="20" fill="#243447">article_id</text>
+<text class="ftype" x="308" y="103" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+<line x1="0" y1="116" x2="320" y2="116" stroke="#E1E7EF" stroke-width="1"/>
+<text class="field" x="72" y="139" font-size="20" fill="#243447">created_at</text>
+<text class="ftype" x="308" y="139" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+</g>
+<g class="entity" transform="translate(470,660)">
+<rect class="box" x="0" y="0" width="320" height="198" rx="8" fill="#FFFFFF" stroke="#2F4B6E" stroke-width="1.7"/>
+<path d="M0 8 Q0 0 8 0 H312 Q320 0 320 8 V44 H0 Z" fill="#D9E4F0" stroke="#2F4B6E" stroke-width="1.7"/>
+<text class="entity-title" x="160.0" y="29" text-anchor="middle" font-size="22" font-weight="bold" fill="#243447">history · история</text>
+<rect x="10" y="51" width="50" height="21" rx="5" fill="#F3E3B8"/>
+<text x="35.0" y="66" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7A5B12">PK</text>
+<text class="field" x="72" y="67" font-size="20" fill="#243447">id</text>
+<text class="ftype" x="308" y="67" text-anchor="end" font-size="18.5" fill="#52627A">INTEGER</text>
+<line x1="0" y1="80" x2="320" y2="80" stroke="#E1E7EF" stroke-width="1"/>
+<rect x="10" y="87" width="50" height="21" rx="5" fill="#DCE6F2"/>
+<text x="35.0" y="102" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#2F4B7C">FK</text>
+<text class="field" x="72" y="103" font-size="20" fill="#243447">user_id</text>
+<text class="ftype" x="308" y="103" text-anchor="end" font-size="18.5" fill="#52627A">INTEGER</text>
+<line x1="0" y1="116" x2="320" y2="116" stroke="#E1E7EF" stroke-width="1"/>
+<rect x="10" y="123" width="50" height="21" rx="5" fill="#DCE6F2"/>
+<text x="35.0" y="138" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#2F4B7C">FK</text>
+<text class="field" x="72" y="139" font-size="20" fill="#243447">article_id</text>
+<text class="ftype" x="308" y="139" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+<line x1="0" y1="152" x2="320" y2="152" stroke="#E1E7EF" stroke-width="1"/>
+<text class="field" x="72" y="175" font-size="20" fill="#243447">viewed_at</text>
+<text class="ftype" x="308" y="175" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+</g>
+<g class="entity" transform="translate(1060,280)">
+<rect class="box" x="0" y="0" width="320" height="342" rx="8" fill="#FFFFFF" stroke="#2F4B6E" stroke-width="1.7"/>
+<path d="M0 8 Q0 0 8 0 H312 Q320 0 320 8 V44 H0 Z" fill="#D9E4F0" stroke="#2F4B6E" stroke-width="1.7"/>
+<text class="entity-title" x="160.0" y="29" text-anchor="middle" font-size="22" font-weight="bold" fill="#243447">snippets · сниппеты</text>
+<rect x="10" y="51" width="50" height="21" rx="5" fill="#F3E3B8"/>
+<text x="35.0" y="66" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7A5B12">PK</text>
+<text class="field" x="72" y="67" font-size="20" fill="#243447">id</text>
+<text class="ftype" x="308" y="67" text-anchor="end" font-size="18.5" fill="#52627A">INTEGER</text>
+<line x1="0" y1="80" x2="320" y2="80" stroke="#E1E7EF" stroke-width="1"/>
+<rect x="10" y="87" width="50" height="21" rx="5" fill="#DCE6F2"/>
+<text x="35.0" y="102" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#2F4B7C">FK</text>
+<text class="field" x="72" y="103" font-size="20" fill="#243447">user_id</text>
+<text class="ftype" x="308" y="103" text-anchor="end" font-size="18.5" fill="#52627A">INTEGER</text>
+<line x1="0" y1="116" x2="320" y2="116" stroke="#E1E7EF" stroke-width="1"/>
+<text class="field" x="72" y="139" font-size="20" fill="#243447">title</text>
+<text class="ftype" x="308" y="139" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+<line x1="0" y1="152" x2="320" y2="152" stroke="#E1E7EF" stroke-width="1"/>
+<rect x="10" y="159" width="50" height="21" rx="5" fill="#F6E3CC"/>
+<text x="35.0" y="174" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#8A4B1A">CK</text>
+<text class="field" x="72" y="175" font-size="20" fill="#243447">language</text>
+<text class="ftype" x="308" y="175" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+<line x1="0" y1="188" x2="320" y2="188" stroke="#E1E7EF" stroke-width="1"/>
+<text class="field" x="72" y="211" font-size="20" fill="#243447">code</text>
+<text class="ftype" x="308" y="211" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+<line x1="0" y1="224" x2="320" y2="224" stroke="#E1E7EF" stroke-width="1"/>
+<text class="field" x="72" y="247" font-size="20" fill="#243447">expected_output</text>
+<text class="ftype" x="308" y="247" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+<line x1="0" y1="260" x2="320" y2="260" stroke="#E1E7EF" stroke-width="1"/>
+<text class="field" x="72" y="283" font-size="20" fill="#243447">created_at</text>
+<text class="ftype" x="308" y="283" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+<line x1="0" y1="296" x2="320" y2="296" stroke="#E1E7EF" stroke-width="1"/>
+<text class="field" x="72" y="319" font-size="20" fill="#243447">updated_at</text>
+<text class="ftype" x="308" y="319" text-anchor="end" font-size="18.5" fill="#52627A">TEXT</text>
+</g>
+<g id="relations">
+<polyline class="rel" points="190,264 190,310" fill="none" stroke="#40536E" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<line x1="183" y1="257" x2="197" y2="257" stroke="#40536E" stroke-width="2" stroke-linecap="round"/>
+<line x1="190" y1="293" x2="198" y2="310" stroke="#40536E" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="190" y1="293" x2="190" y2="310" stroke="#40536E" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="190" y1="293" x2="182" y2="310" stroke="#40536E" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="164" cy="278" r="12" fill="#FFFFFF" stroke="#40536E" stroke-width="1.4"/>
+<text x="164" y="283.5" text-anchor="middle" font-size="15" font-weight="bold" fill="#243447">1</text>
+<circle cx="218" cy="300" r="12" fill="#FFFFFF" stroke="#40536E" stroke-width="1.4"/>
+<text x="218" y="305.5" text-anchor="middle" font-size="15" font-weight="bold" fill="#243447">N</text>
+<text x="222" y="282" text-anchor="start" font-size="15" font-style="italic" fill="#52627A">содержит</text>
+<polyline class="rel" points="770,140 1060,140" fill="none" stroke="#40536E" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<line x1="763" y1="147" x2="763" y2="133" stroke="#40536E" stroke-width="2" stroke-linecap="round"/>
+<line x1="1043" y1="140" x2="1060" y2="132" stroke="#40536E" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="1043" y1="140" x2="1060" y2="140" stroke="#40536E" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="1043" y1="140" x2="1060" y2="148" stroke="#40536E" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="788" cy="122" r="14" fill="#FFFFFF" stroke="#40536E" stroke-width="1.4"/>
+<text x="788" y="127.5" text-anchor="middle" font-size="15" font-weight="bold" fill="#243447">1</text>
+<circle cx="1042" cy="122" r="14" fill="#FFFFFF" stroke="#40536E" stroke-width="1.4"/>
+<text x="1042" y="127.5" text-anchor="middle" font-size="15" font-weight="bold" fill="#243447">N</text>
+<text x="900" y="128" text-anchor="middle" font-size="15" font-style="italic" fill="#52627A">имеет</text>
+<polyline class="rel" points="560,408 560,455" fill="none" stroke="#40536E" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<line x1="553" y1="401" x2="567" y2="401" stroke="#40536E" stroke-width="2" stroke-linecap="round"/>
+<line x1="560" y1="438" x2="568" y2="455" stroke="#40536E" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="560" y1="438" x2="560" y2="455" stroke="#40536E" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="560" y1="438" x2="552" y2="455" stroke="#40536E" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="530" cy="426" r="14" fill="#FFFFFF" stroke="#40536E" stroke-width="1.4"/>
+<text x="530" y="431.5" text-anchor="middle" font-size="15" font-weight="bold" fill="#243447">1</text>
+<circle cx="592" cy="442" r="14" fill="#FFFFFF" stroke="#40536E" stroke-width="1.4"/>
+<text x="592" y="447.5" text-anchor="middle" font-size="15" font-weight="bold" fill="#243447">N</text>
+<text x="620" y="432" text-anchor="start" font-size="15" font-style="italic" fill="#52627A">добавляет</text>
+<polyline class="rel" points="380,520 420,520 420,480 470,480" fill="none" stroke="#40536E" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<line x1="373" y1="527" x2="373" y2="513" stroke="#40536E" stroke-width="2" stroke-linecap="round"/>
+<line x1="453" y1="480" x2="470" y2="472" stroke="#40536E" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="453" y1="480" x2="470" y2="480" stroke="#40536E" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="453" y1="480" x2="470" y2="488" stroke="#40536E" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="394" cy="504" r="14" fill="#FFFFFF" stroke="#40536E" stroke-width="1.4"/>
+<text x="394" y="509.5" text-anchor="middle" font-size="15" font-weight="bold" fill="#243447">1</text>
+<circle cx="448" cy="500" r="14" fill="#FFFFFF" stroke="#40536E" stroke-width="1.4"/>
+<text x="448" y="505.5" text-anchor="middle" font-size="15" font-weight="bold" fill="#243447">N</text>
+<polyline class="rel" points="770,300 1010,300 1010,750 790,750" fill="none" stroke="#40536E" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<line x1="763" y1="307" x2="763" y2="293" stroke="#40536E" stroke-width="2" stroke-linecap="round"/>
+<line x1="807" y1="750" x2="790" y2="758" stroke="#40536E" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="807" y1="750" x2="790" y2="750" stroke="#40536E" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="807" y1="750" x2="790" y2="742" stroke="#40536E" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="788" cy="282" r="14" fill="#FFFFFF" stroke="#40536E" stroke-width="1.4"/>
+<text x="788" y="287.5" text-anchor="middle" font-size="15" font-weight="bold" fill="#243447">1</text>
+<circle cx="960" cy="770" r="14" fill="#FFFFFF" stroke="#40536E" stroke-width="1.4"/>
+<text x="960" y="775.5" text-anchor="middle" font-size="15" font-weight="bold" fill="#243447">N</text>
+<text x="890" y="290" text-anchor="middle" font-size="15" font-style="italic" fill="#52627A">просматривает</text>
+<polyline class="rel" points="380,620 410,620 410,820 470,820" fill="none" stroke="#40536E" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<line x1="373" y1="627" x2="373" y2="613" stroke="#40536E" stroke-width="2" stroke-linecap="round"/>
+<line x1="453" y1="820" x2="470" y2="812" stroke="#40536E" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="453" y1="820" x2="470" y2="820" stroke="#40536E" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="453" y1="820" x2="470" y2="828" stroke="#40536E" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="394" cy="604" r="14" fill="#FFFFFF" stroke="#40536E" stroke-width="1.4"/>
+<text x="394" y="609.5" text-anchor="middle" font-size="15" font-weight="bold" fill="#243447">1</text>
+<circle cx="448" cy="842" r="14" fill="#FFFFFF" stroke="#40536E" stroke-width="1.4"/>
+<text x="448" y="847.5" text-anchor="middle" font-size="15" font-weight="bold" fill="#243447">N</text>
+<text x="500" y="612" text-anchor="middle" font-size="15" font-style="italic" fill="#52627A">просматривает</text>
+<polyline class="rel" points="770,260 1200,260 1200,280" fill="none" stroke="#40536E" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<line x1="763" y1="267" x2="763" y2="253" stroke="#40536E" stroke-width="2" stroke-linecap="round"/>
+<line x1="1200" y1="263" x2="1208" y2="280" stroke="#40536E" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="1200" y1="263" x2="1200" y2="280" stroke="#40536E" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="1200" y1="263" x2="1192" y2="280" stroke="#40536E" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="788" cy="242" r="14" fill="#FFFFFF" stroke="#40536E" stroke-width="1.4"/>
+<text x="788" y="247.5" text-anchor="middle" font-size="15" font-weight="bold" fill="#243447">1</text>
+<circle cx="1216" cy="246" r="14" fill="#FFFFFF" stroke="#40536E" stroke-width="1.4"/>
+<text x="1216" y="251.5" text-anchor="middle" font-size="15" font-weight="bold" fill="#243447">N</text>
+<text x="900" y="252" text-anchor="middle" font-size="15" font-style="italic" fill="#52627A">создаёт</text>
+</g>
+<g class="mn"><rect x="470" y="428" width="54" height="22" rx="5" fill="#F3E3B8" stroke="#7A5B12" stroke-width="1"/>
+<text x="497" y="444" text-anchor="middle" font-size="13" font-weight="bold" fill="#5E4A1A">M:N</text></g>
+<g id="legend" transform="translate(1020,660)">
+<rect x="0" y="0" width="360" height="198" rx="7" fill="#FAFBFD" stroke="#B9C6D8" stroke-width="1.3"/>
+<text x="16" y="29" font-size="17" font-weight="bold" fill="#243447">Условные обозначения</text>
+<text x="16" y="57" font-size="13.5" fill="#52627A">PK — первичный ключ, FK — внешний ключ,</text>
+<text x="16" y="77" font-size="13.5" fill="#52627A">UQ — уникальное, CK — CHECK-ограничение.</text>
+<text x="16" y="97" font-size="13.5" fill="#52627A">INTEGER/TEXT — классы хранения SQLite;</text>
+<text x="16" y="117" font-size="13.5" fill="#52627A">даты и JSON хранятся в TEXT.</text>
+<text x="16" y="137" font-size="13.5" fill="#52627A">1 — одна, N — много записей.</text>
+<text x="16" y="157" font-size="13.5" fill="#52627A">M:N — через таблицу favorites.</text>
+<text x="16" y="177" font-size="13.5" fill="#52627A">history — связь с временем viewed_at.</text>
+</g>
+</svg>

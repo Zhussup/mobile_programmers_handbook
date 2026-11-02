@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/offline_banner.dart';
 import '../playground_draft_provider.dart';
 import '../snippet_model.dart';
 import '../snippet_provider.dart';
@@ -94,8 +95,9 @@ class _PlaygroundScreenState extends State<PlaygroundScreen> {
     SnippetProvider provider,
     ColorScheme scheme,
   ) {
+    final Widget content;
     if (provider.entries.isEmpty) {
-      return const Center(
+      content = const Center(
         child: EmptyState(
           key: Key('playground-empty'),
           title: 'Сниппетов пока нет',
@@ -105,21 +107,32 @@ class _PlaygroundScreenState extends State<PlaygroundScreen> {
           icon: Icons.code,
         ),
       );
+    } else {
+      content = ListView.builder(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
+        itemCount: provider.entries.length,
+        itemBuilder: (context, index) {
+          final snippet = provider.entries[index];
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: _SnippetCard(
+              key: Key('snippet-card-${snippet.id}'),
+              snippet: snippet,
+            ),
+          );
+        },
+      );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
-      itemCount: provider.entries.length,
-      itemBuilder: (context, index) {
-        final snippet = provider.entries[index];
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 10),
-          child: _SnippetCard(
-            key: Key('snippet-card-${snippet.id}'),
-            snippet: snippet,
-          ),
-        );
-      },
+    if (!provider.offline) return content;
+    return Column(
+      children: [
+        const Padding(
+          padding: EdgeInsets.fromLTRB(16, 16, 16, 0),
+          child: OfflineBanner(),
+        ),
+        Expanded(child: content),
+      ],
     );
   }
 }

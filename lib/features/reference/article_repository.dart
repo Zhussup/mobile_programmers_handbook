@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter/services.dart' show rootBundle;
 
 import 'article_model.dart';
+import 'reference_content_repository.dart';
 
 /// Репозиторий справочника: загрузка и разбор JSON-ассетов контента
 /// (assets/content/reference/).
@@ -14,7 +15,7 @@ import 'article_model.dart';
 ///
 /// В контенте — ТОЛЬКО данные справочника (категории/статьи), они
 /// иммутабельны; пользовательские данные живут в SQLite (favorites/history).
-class ArticleRepository {
+class ArticleRepository implements ReferenceContentRepository {
   /// Список файлов контента (см. README: имена файлов и category.id).
   ///
   /// Полный план: 5 категорий C++ + ветка Dart/Flutter. Производственный
@@ -57,11 +58,17 @@ class ArticleRepository {
   bool _loaded = false;
 
   /// Контент загружен и разобран.
+  @override
   bool get isLoaded => _loaded;
+
+  /// Локальные JSON-ассеты — это не кэш API, баннер офлайна не нужен.
+  @override
+  bool get isFromCache => false;
 
   /// Загрузка из ассетов (production-путь). Повторный вызов — no-op.
   ///
   /// Отдельный сбойный файл не роняет загрузку остальных (defensive).
+  @override
   Future<void> loadFromAssets() async {
     if (_loaded) return;
     for (final name in contentFiles) {
@@ -137,14 +144,17 @@ class ArticleRepository {
   }
 
   /// Все категории (порядок следования файлов контента).
+  @override
   List<ReferenceCategory> get categories => List.unmodifiable(_categories);
 
   /// Категория по id (null — неизвестная категория; не падать, а показать
   /// экран-заглушку).
+  @override
   ReferenceCategory? categoryById(String categoryId) =>
       _categoriesById[categoryId];
 
   /// Статьи категории, отсортированные по сложности (простые раньше).
+  @override
   List<Article> articlesForCategory(String categoryId) {
     final list = _articlesByCategory[categoryId];
     if (list == null) return const [];
@@ -156,12 +166,14 @@ class ArticleRepository {
   }
 
   /// Статья по id по всему справочнику (null — нет такой статьи).
+  @override
   Article? articleById(String articleId) => _articlesById[articleId];
 
   /// Категория, которой принадлежит статья (null — нет такой статьи).
   ///
   /// Используется поиском (P8): результат поиска показывает категорию
   /// рядом с заголовком (README: category.id — идентификаторы категорий).
+  @override
   ReferenceCategory? categoryOfArticle(String articleId) {
     final categoryId = _articleCategoryIds[articleId];
     if (categoryId == null) return null;

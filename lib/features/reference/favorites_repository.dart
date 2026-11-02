@@ -3,6 +3,7 @@ import 'package:sqflite/sqflite.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/db/app_database.dart';
+import 'favorites_data_source.dart';
 
 /// Строка таблицы favorites: id статьи + время добавления.
 ///
@@ -33,14 +34,19 @@ class FavoriteRecord {
 /// Все запросы — с `WHERE user_id = ?` (изоляция мультиюзера: данные одного
 /// пользователя не видны другому, logout ничего не удаляет); SQL-запросы
 /// строго параметризованные, имена таблиц — константы [AppDbTables].
-class FavoritesRepository {
+class FavoritesRepository implements FavoritesDataSource {
   /// Репозиторий поверх открытой БД ([AppDatabase.instance]).
   const FavoritesRepository({required this.db});
 
   /// Открытая база.
   final Database db;
 
+  /// Локальные данные — не кэш API (баннер офлайна не нужен).
+  @override
+  bool get servedFromCache => false;
+
   /// В избранном ли статья у пользователя.
+  @override
   Future<bool> isFavorite(int userId, String articleId) async {
     final rows = await db.query(
       AppConstants.tableFavorites,
@@ -57,6 +63,7 @@ class FavoritesRepository {
   /// дублирует строку (INSERT с replace-конфликтом), повторное удаление —
   /// no-op. Возвращает состояние ПОСЛЕ переключения: true — добавлено,
   /// false — удалено.
+  @override
   Future<bool> toggle(int userId, String articleId) async {
     final wasFavorite = await isFavorite(userId, articleId);
     if (wasFavorite) {
@@ -76,6 +83,7 @@ class FavoritesRepository {
   }
 
   /// Список избранного пользователя: свежие раньше.
+  @override
   Future<List<FavoriteRecord>> listForUser(int userId) async {
     final rows = await db.query(
       AppConstants.tableFavorites,
@@ -84,5 +92,31 @@ class FavoritesRepository {
       orderBy: 'created_at DESC',
     );
     return [for (final row in rows) FavoriteRecord.fromMap(row)];
+  }
+
+  /// Полная замена кэша избранного пользователя успешным ответом API.
+  ///
+  /// Используется удалённым репозиторием: кэш не второй источник истины,
+  /// а точная копия последнего ответа сервера.
+  Future<void> replaceForUser(
+    int userId,
+    List<FavoriteRecord> records,
+  ) async {
+    await db.transaction((txn) async {
+      await txn.delete(
+        AppConstants.tableFavorites,
+        where: 'user_id = ?',
+        whereArgs: [userId],
+      );
+      final batch = txn.batch();
+      for (final record in records) {
+        batch.insert(AppConstants.tableFavorites, {
+          'user_id': userId,
+          'article_id': record.articleId,
+          'created_at': record.createdAt.toIso8601String(),
+        }, conflictAlgorithm: ConflictAlgorithm.replace);
+      }
+      await batch.commit(noResult: true);
+    });
   }
 }

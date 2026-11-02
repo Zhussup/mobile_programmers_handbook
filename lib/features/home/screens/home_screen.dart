@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/offline_banner.dart';
 import '../../auth/session_provider.dart';
 import '../../reference/article_model.dart';
 import '../../reference/history_provider.dart';
@@ -118,11 +119,22 @@ class HomeScreen extends StatelessWidget {
           ),
         );
       case ReferenceStatus.error:
-        return EmptyState(
+        return Column(
           key: const Key('reference-error'),
-          title: 'Справочник недоступен',
-          message: reference.errorMessage,
-          icon: Icons.cloud_off,
+          children: [
+            EmptyState(
+              title: 'Справочник недоступен',
+              message: reference.errorMessage,
+              icon: Icons.cloud_off,
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              key: const Key('reference-retry'),
+              onPressed: reference.retry,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Повторить'),
+            ),
+          ],
         );
       case ReferenceStatus.ready:
         final categories = reference.categories;
@@ -134,6 +146,7 @@ class HomeScreen extends StatelessWidget {
         }
         return Column(
           children: [
+            if (reference.isFromCache) const OfflineBanner(),
             for (final category in categories)
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),

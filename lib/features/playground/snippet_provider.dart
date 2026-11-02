@@ -1,7 +1,7 @@
 import '../auth/session_provider.dart' show SessionProvider;
 import '../reference/user_scoped_provider.dart';
 import 'snippet_model.dart';
-import 'snippet_repository.dart';
+import 'snippet_data_source.dart';
 
 /// Провайдер сниппетов песочницы (P10): список своих сниппетов + CRUD с
 /// уведомлением слушателей (список и счётчик статистики перерисовываются
@@ -16,14 +16,18 @@ class SnippetProvider extends UserScopedProvider {
   SnippetProvider({required this.repository, required SessionProvider session})
     : super(session);
 
-  /// Репозиторий сниппетов (SQLite).
-  final SnippetRepository repository;
+  /// Источник сниппетов (SQLite или backend API).
+  final SnippetDataSource repository;
 
   List<Snippet> _entries = const [];
   bool _loading = true;
+  bool _offline = false;
 
   /// Загружается ли сейчас список (первая загрузка).
   bool get loading => _loading;
+
+  /// Данные отданы из кэша из-за сетевой ошибки.
+  bool get offline => _offline;
 
   /// Сниппеты пользователя (свежие изменения раньше — сортировка репозитория).
   List<Snippet> get entries => List.unmodifiable(_entries);
@@ -48,6 +52,7 @@ class SnippetProvider extends UserScopedProvider {
     try {
       final records = await repository.listForUser(userId);
       if (!isActual(token)) return; // пользователь сменился за время запроса
+      _offline = repository.servedFromCache;
       _entries = records;
     } on Exception {
       if (!isActual(token)) return;

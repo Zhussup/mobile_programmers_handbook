@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../reference/article_model.dart';
-import '../reference/article_repository.dart';
+import '../reference/reference_content_repository.dart';
 
 /// Результат поиска: статья + её категория (показываем категорию рядом с
 /// результатом — «удобно видеть, откуда статья»).
@@ -31,8 +31,8 @@ class SearchProvider extends ChangeNotifier {
   /// Провайдер поиска поверх репозитория контента.
   SearchProvider(this.articles);
 
-  /// Репозиторий справочника.
-  final ArticleRepository articles;
+  /// Источник контента (JSON-ассеты или backend API).
+  final ReferenceContentRepository articles;
 
   /// Текущий запрос (как в поле ввода).
   String query = '';
@@ -64,7 +64,7 @@ class SearchProvider extends ChangeNotifier {
   /// Результаты поиска под текущие запрос/фильтр.
   ///
   /// Порядок: по категориям (порядок файлов контента), внутри категории —
-  /// от простых к сложным ([ArticleRepository.articlesForCategory]).
+  /// от простых к сложным ([ReferenceContentRepository.articlesForCategory]).
   List<SearchResult> get results {
     final normalized = query.trim().toLowerCase();
     return [

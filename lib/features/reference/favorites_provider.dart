@@ -2,8 +2,8 @@ import 'package:flutter/foundation.dart';
 
 import '../auth/session_provider.dart';
 import 'article_model.dart';
-import 'article_repository.dart';
-import 'favorites_repository.dart';
+import 'favorites_data_source.dart';
+import 'reference_content_repository.dart';
 import 'user_scoped_provider.dart';
 
 /// Модель списка «Избранное»: строка БД + контент статьи.
@@ -32,19 +32,23 @@ class FavoritesProvider extends UserScopedProvider {
   }) : super(session);
 
   /// Репозиторий контента (join избранного со статьями).
-  final ArticleRepository articles;
+  final ReferenceContentRepository articles;
 
   /// Репозиторий избранного (SQLite).
-  final FavoritesRepository repository;
+  final FavoritesDataSource repository;
 
   /// Список избранного (сшиты с контентом; без «мёртвых» статей).
   List<FavoriteEntry> _entries = const [];
   Set<String> _ids = const {};
   Map<String, DateTime> _createdAt = const {};
   bool _loading = true;
+  bool _offline = false;
 
   /// Загружается ли сейчас список (первая загрузка).
   bool get loading => _loading;
+
+  /// Данные отданы из кэша из-за сетевой ошибки.
+  bool get offline => _offline;
 
   /// Список избранного пользователя (свежие добавления раньше).
   List<FavoriteEntry> get entries => List.unmodifiable(_entries);
@@ -66,6 +70,7 @@ class FavoritesProvider extends UserScopedProvider {
     try {
       final records = await repository.listForUser(userId);
       if (!isActual(token)) return; // пользователь сменился за время запроса
+      _offline = repository.servedFromCache;
       _ids = {for (final record in records) record.articleId};
       _createdAt = {
         for (final record in records) record.articleId: record.createdAt,

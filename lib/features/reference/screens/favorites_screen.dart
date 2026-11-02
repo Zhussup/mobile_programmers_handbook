@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/offline_banner.dart';
 import '../favorites_provider.dart';
 
 /// Экран «Избранное» `/favorites` (P9): список статей пользователя с
@@ -40,29 +41,44 @@ class FavoritesScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Избранное')),
       body: SafeArea(
-        child: favorites.entries.isEmpty
-            ? const Center(
-                child: EmptyState(
-                  key: Key('favorites-empty'),
-                  title: 'В избранном пусто',
-                  message: 'Добавляйте статьи сердечком в AppBar статьи.',
-                  icon: Icons.favorite_border,
-                ),
-              )
-            : ListView(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-                children: [
-                  for (final entry in favorites.entries)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: _FavoriteCard(
-                        key: Key('favorites-entry-${entry.article.id}'),
-                        entry: entry,
-                        onRemove: () => _remove(context, entry.article.id),
-                      ),
-                    ),
-                ],
+        child: Column(
+          children: [
+            if (favorites.offline)
+              const Padding(
+                padding: EdgeInsets.fromLTRB(16, 16, 16, 0),
+                child: OfflineBanner(),
               ),
+            Expanded(
+              child: favorites.entries.isEmpty
+                  ? const Center(
+                      child: EmptyState(
+                        key: Key('favorites-empty'),
+                        title: 'В избранном пусто',
+                        message:
+                            'Добавляйте статьи сердечком в AppBar статьи.',
+                        icon: Icons.favorite_border,
+                      ),
+                    )
+                  : ListView(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                      children: [
+                        for (final entry in favorites.entries)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: _FavoriteCard(
+                              key: Key(
+                                'favorites-entry-${entry.article.id}',
+                              ),
+                              entry: entry,
+                              onRemove: () =>
+                                  _remove(context, entry.article.id),
+                            ),
+                          ),
+                      ],
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }

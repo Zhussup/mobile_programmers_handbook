@@ -3,8 +3,8 @@ import 'package:flutter/foundation.dart';
 import '../../../core/constants/app_constants.dart';
 import '../auth/session_provider.dart';
 import 'article_model.dart';
-import 'article_repository.dart';
-import 'history_repository.dart';
+import 'history_data_source.dart';
+import 'reference_content_repository.dart';
 import 'user_scoped_provider.dart';
 
 /// Модель «Недавно смотрели» (home) и экрана истории: статья + время.
@@ -34,18 +34,22 @@ class HistoryProvider extends UserScopedProvider {
   }) : super(session);
 
   /// Репозиторий контента (join истории со статьями).
-  final ArticleRepository articles;
+  final ReferenceContentRepository articles;
 
   /// Репозиторий истории (SQLite).
-  final HistoryRepository repository;
+  final HistoryDataSource repository;
 
   /// Топ просмотренных статей (свежие раньше; репозиторий уже отсортировал
   /// и подрезал до топ-20 — JOIN с контентом только отсюда).
   List<HistoryEntry> _entries = const [];
   bool _loading = true;
+  bool _offline = false;
 
   /// Загружается ли сейчас список (первая загрузка).
   bool get loading => _loading;
+
+  /// Данные отданы из кэша из-за сетевой ошибки.
+  bool get offline => _offline;
 
   /// Топ-20 просмотров пользователя (свежие раньше).
   List<HistoryEntry> get entries => List.unmodifiable(_entries);
@@ -65,6 +69,7 @@ class HistoryProvider extends UserScopedProvider {
     try {
       final records = await repository.listTop(userId);
       if (!isActual(token)) return; // пользователь сменился за время запроса
+      _offline = repository.servedFromCache;
       _entries = records
           .where((record) => articles.articleById(record.articleId) != null)
           .map(

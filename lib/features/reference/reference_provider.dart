@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart' show ChangeNotifier, debugPrint;
 
 import 'article_model.dart';
-import 'article_repository.dart';
+import 'reference_content_repository.dart';
 
 /// Состояние загрузки справочника.
 enum ReferenceStatus { loading, ready, error }
@@ -15,8 +15,8 @@ class ReferenceProvider extends ChangeNotifier {
   /// Провайдер поверх репозитория контента.
   ReferenceProvider({required this.repository});
 
-  /// Репозиторий справочника (JSON-контент).
-  final ArticleRepository repository;
+  /// Источник контента (JSON-ассеты или backend API).
+  final ReferenceContentRepository repository;
 
   ReferenceStatus _status = ReferenceStatus.loading;
   bool _loadStarted = false;
@@ -27,7 +27,10 @@ class ReferenceProvider extends ChangeNotifier {
   /// Русское сообщение об ошибке (для экрана-заглушки).
   String get errorMessage =>
       'Не удалось загрузить содержимое справочника. '
-      'Соберите приложение заново и попробуйте снова.';
+      'Проверьте подключение и попробуйте снова.';
+
+  /// Контент отдан из кэша из-за сетевой ошибки (баннер офлайна).
+  bool get isFromCache => repository.isFromCache;
 
   /// Загрузка контента (вызывается один раз при создании провайдера).
   ///
@@ -51,6 +54,14 @@ class ReferenceProvider extends ChangeNotifier {
       _status = ReferenceStatus.error;
     }
     notifyListeners();
+  }
+
+  /// Повторная загрузка после ошибки (кнопка «Повторить»).
+  Future<void> retry() async {
+    _loadStarted = false;
+    _status = ReferenceStatus.loading;
+    notifyListeners();
+    await load();
   }
 
   /// Категории справочника (пусто до готовности — экраны показывают спиннер).

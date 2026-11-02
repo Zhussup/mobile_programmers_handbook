@@ -1,6 +1,8 @@
+import 'dart:async' show unawaited;
+
 import 'package:flutter/foundation.dart' show ChangeNotifier, immutable;
 
-import 'auth_repository.dart';
+import 'auth_repository_base.dart';
 import 'user_model.dart';
 
 /// Статус авторизации (для redirect-guard).
@@ -58,11 +60,22 @@ class SessionProvider extends ChangeNotifier {
   /// Провайдер сессии поверх репозитория users.
   SessionProvider({required this.repository});
 
-  /// Репозиторий users (sqflite).
-  final AuthRepository repository;
+  /// Репозиторий users (локальная БД или backend API).
+  final AuthRepositoryBase repository;
 
   UserModel? _user;
   bool _initialized = false;
+  String? _notice;
+
+  /// Сообщение для экрана входа (истёкшая сессия / блокировка).
+  ///
+  /// Выставляется при 401 и 403 `user_blocked`; [takeNotice] забирает его
+  /// один раз, чтобы снекбар не повторялся при перестройках.
+  String? takeNotice() {
+    final notice = _notice;
+    _notice = null;
+    return notice;
+  }
 
   /// Текущий пользователь (null — не вошёл).
   UserModel? get currentUser => _user;
@@ -146,6 +159,28 @@ class SessionProvider extends ChangeNotifier {
   Future<void> logout() async {
     await repository.logout();
     _user = null;
+    notifyListeners();
+  }
+
+  /// Принудительный выход по 401 (токен истёк/отозван).
+  ///
+  /// Вызывается сетевым слоем; локальная сессия очищается БЕЗ обращения к
+  /// серверу, роутер по notify переводит пользователя на `/login`.
+  void handleUnauthorized() {
+    if (_user == null) return;
+    _notice = 'Сессия истекла. Войдите снова.';
+    _user = null;
+    _initialized = true;
+    unawaited(repository.clearSession());
+    notifyListeners();
+  }
+
+  /// Принудительный выход по 403 `user_blocked` с пояснением причины.
+  void handleBlocked() {
+    _notice = 'Учётная запись заблокирована администратором.';
+    _user = null;
+    _initialized = true;
+    unawaited(repository.clearSession());
     notifyListeners();
   }
 

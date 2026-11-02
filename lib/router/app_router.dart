@@ -69,16 +69,48 @@ class _RouteNotFoundScreen extends StatelessWidget {
   }
 }
 
+/// Слушатель сессии для [GoRouter.refreshListenable].
+///
+/// Реагирует ТОЛЬКО на смену статуса входа или пользователя (id), а не на
+/// каждое notifyListeners: обычное обновление профиля ([SessionProvider.
+/// refreshUser]) не должно пересобирать маршрут — иначе запланированный
+/// refresh выполняется после `context.pop()` и возвращает экран назад
+/// (найдено виджет-тестом profile_edit).
+class _AuthRedirectListenable extends ChangeNotifier {
+  _AuthRedirectListenable(this._session) {
+    _last = _session.state;
+    _session.addListener(_onSessionChanged);
+  }
+
+  final SessionProvider _session;
+  late AuthState _last;
+
+  void _onSessionChanged() {
+    final next = _session.state;
+    final changed =
+        next.status != _last.status || next.user?.id != _last.user?.id;
+    _last = next;
+    if (changed) notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _session.removeListener(_onSessionChanged);
+    super.dispose();
+  }
+}
+
 /// Сборка GoRouter: сплэш, логин, регистрация + StatefulShellRoute с 4
 /// постоянными вкладками; приватные маршруты — внутри ветка «Справочник».
 ///
 /// [session] — сессия для auth-guard; [initialLocation] — параметр для
-/// виджет-тестов (в приложении — /splash). refreshListenable не нужен:
-/// сессия инициализируется до runApp, а переходы auth-экранов выполняются
-/// явным context.go() после register/login/logout.
+/// виджет-тестов (в приложении — /splash). refreshListenable пересчитывает
+/// redirect при смене статуса входа (в т.ч. принудительный выход из
+/// сетевого слоя 401/403): роутер сам уводит пользователя на `/login`.
 GoRouter buildAppRouter(SessionProvider session, {String? initialLocation}) {
   return GoRouter(
     initialLocation: initialLocation ?? AppConstants.routeSplash,
+    refreshListenable: _AuthRedirectListenable(session),
     redirect: (context, state) =>
         authRedirect(state.matchedLocation, session.state),
     errorBuilder: (context, state) => const _RouteNotFoundScreen(),

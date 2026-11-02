@@ -30,6 +30,29 @@ class UserModel {
   /// Первая буква имени — текст аватара.
   String get avatarLetter => username.isEmpty ? '?' : username[0].toUpperCase();
 
+  /// Разбор пользователя из JSON API (`{"id":3,"username":...}`).
+  ///
+  /// Терпим к необязательным/альтернативным именам полей: backend отдаёт
+  /// `avatar_color`/`created_at`, но клиент не должен падать на вариантах
+  /// camelCase или отсутствующей дате.
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    final rawId = json['id'];
+    final id = rawId is int
+        ? rawId
+        : int.tryParse(rawId?.toString() ?? '') ?? 0;
+    final createdAtRaw = json['created_at'] ?? json['createdAt'];
+    return UserModel(
+      id: id,
+      username: (json['username'] as String?)?.trim() ?? '',
+      email: (json['email'] as String?)?.trim() ?? '',
+      avatarColor:
+          (json['avatar_color'] ?? json['avatarColor']) as String? ??
+          '#3949AB',
+      createdAt:
+          DateTime.tryParse(createdAtRaw?.toString() ?? '') ?? DateTime.now(),
+    );
+  }
+
   /// Разбор строки запроса таблицы `users` в модель.
   factory UserModel.fromMap(Map<String, Object?> map) {
     return UserModel(
@@ -50,6 +73,15 @@ class UserModel {
       'created_at': createdAt.toIso8601String(),
     };
   }
+
+  /// Модель → JSON для кэша профиля (восстановление сессии офлайн).
+  Map<String, Object?> toJson() => {
+    'id': id,
+    'username': username,
+    'email': email,
+    'avatar_color': avatarColor,
+    'created_at': createdAt.toIso8601String(),
+  };
 
   @override
   bool operator ==(Object other) {

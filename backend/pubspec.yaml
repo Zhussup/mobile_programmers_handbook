@@ -1,0 +1,16 @@
+name: mob_kurs_backend
+description: Backend REST API курсового проекта «Справочник по C++ и Dart/Flutter».
+publish_to: none
+version: 1.0.0
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  crypto: ^3.0.7
+  path: ^1.9.1
+  shelf: ^1.4.2
+  sqflite_common_ffi: ^2.4.3
+
+dev_dependencies:
+  test: ^1.26.0

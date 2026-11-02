@@ -17,6 +17,12 @@ class AppConstants {
   /// Тема оформления: system | light | dark.
   static const String prefSessionTheme = 'session_theme';
 
+  /// Bearer-токен backend API (КР_2_2). В локальном режиме не используется.
+  static const String prefAuthToken = 'auth_token';
+
+  /// Кэш профиля для восстановления сессии при недоступном сервере.
+  static const String prefAuthUser = 'auth_user';
+
   // --- Имена таблиц SQLite (создание — фаза P2) ---
   static const String tableUsers = 'users';
   static const String tableFavorites = 'favorites';

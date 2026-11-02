@@ -28,6 +28,17 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _submitting = false;
 
   @override
+  void initState() {
+    super.initState();
+    // Причина принудительного выхода (401/403 user_blocked) — один раз.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final notice = context.read<SessionProvider>().takeNotice();
+      if (notice != null) showAppSnackBar(context, notice, isError: true);
+    });
+  }
+
+  @override
   void dispose() {
     _loginController.dispose();
     _passwordController.dispose();
