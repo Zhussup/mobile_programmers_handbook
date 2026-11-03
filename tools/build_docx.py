@@ -46,6 +46,8 @@ SECTIONS = [
     ("R09_literature_final.md", "all"),
     ("APPENDIX_A.md", "all"),
     ("APPENDIX_B.md", "all"),
+    ("APPENDIX_V.md", "all"),
+    ("APPENDIX_G.md", "all"),
 ]
 
 TITLE_LINES = [
@@ -238,12 +240,56 @@ def style_document(doc: Document) -> None:
         section.top_margin = Cm(2.0)
         section.bottom_margin = Cm(2.0)
 
+    first_heading = True
     for p in doc.paragraphs:
         style = p.style.name if p.style is not None else ""
+        # Блоки кода: pandoc оставляет их обычными абзацами с переводами строк.
+        if "\n" in p.text and not style.startswith("Heading"):
+            p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+            p.paragraph_format.first_line_indent = Cm(0)
+            p.paragraph_format.line_spacing = 1.0
+            p.paragraph_format.space_after = Pt(0)
+            for r in p.runs:
+                r.font.name = "Courier New"
+                r.font.size = Pt(12)
+                r.font.bold = False
+                r.font.underline = False
+            continue
+        # Рисунок и его подпись не разрываются между страницами.
+        if "<w:drawing>" in p._p.xml:
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p.paragraph_format.first_line_indent = Cm(0)
+            p.paragraph_format.keep_with_next = True
+            p.paragraph_format.space_before = Pt(6)
+            p.paragraph_format.space_after = Pt(0)
+            continue
+        # Подпись рисунка — по центру под рисунком.
+        if p.text.startswith("Рисунок "):
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p.paragraph_format.first_line_indent = Cm(0)
+            p.paragraph_format.keep_together = True
+            continue
+        # Название таблицы — над таблицей, с абзацного отступа.
+        # Небольшую таблицу держим вместе с названием, чтобы подпись
+        # не оставалась внизу страницы без самой таблицы.
+        if p.text.startswith("Таблица ") or p.text.startswith("Продолжение таблицы "):
+            p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+            p.paragraph_format.first_line_indent = Cm(1.25)
+            nxt = p._p.getnext()
+            if nxt is not None and nxt.tag == qn("w:tbl"):
+                if len(nxt.findall(qn("w:tr"))) <= 10:
+                    p.paragraph_format.keep_with_next = True
+            continue
         if style.startswith("Heading"):
             p.alignment = WD_ALIGN_PARAGRAPH.CENTER
             p.paragraph_format.first_line_indent = Cm(0)
             p.paragraph_format.line_spacing = 1.5
+            if style == "Heading 1":
+                # Каждая глава и приложение начинаются с новой страницы.
+                # Первый заголовок уже стоит после разрыва секции.
+                if not first_heading:
+                    p.paragraph_format.page_break_before = True
+                first_heading = False
             for r in p.runs:
                 r.font.name = "Times New Roman"
                 r.font.size = Pt(14)
@@ -260,6 +306,12 @@ def style_document(doc: Document) -> None:
         for row in table.rows:
             for cell in row.cells:
                 for p in cell.paragraphs:
+                    p.paragraph_format.first_line_indent = Cm(0)
+                    p.paragraph_format.left_indent = Cm(0)
+                    p.paragraph_format.right_indent = Cm(0)
+                    p.paragraph_format.space_before = Pt(0)
+                    p.paragraph_format.space_after = Pt(0)
+                    p.paragraph_format.line_spacing = 1.0
                     for r in p.runs:
                         r.font.name = "Times New Roman"
                         r.font.size = Pt(12)
@@ -287,34 +339,36 @@ def main() -> None:
         "-o",
         str(OUT),
     ]
-    subprocess.run(cmd, check=True)
+    subprocess.run(cmd, check=True, cwd=KR)
     print(f"pandoc: {OUT}")
 
+    # Работаем с документом pandoc: в нём уже есть изображения и связи,
+    # которые потерялись бы при переносе тела в другой пакет DOCX.
     doc = Document(OUT)
-    # pandoc создаёт тело; вставляем титул и оглавление в начало.
-    # Проще: создать новый документ с титулом и оглавлением, затем перенести тело.
-    new = Document()
-    add_title_page(new)
-    new.add_section(WD_SECTION.NEW_PAGE)
-    add_toc(new)
-    new.add_section(WD_SECTION.NEW_PAGE)
+    body = doc.element.body
+    final_sect = body.find(qn("w:sectPr"))
+    # Содержимое pandoc временно вынимаем и вернём после титула и оглавления.
+    children = [child for child in list(body) if child is not final_sect]
+    for child in children:
+        body.remove(child)
 
-    # Переносим все элементы тела pandoc в новый документ.
-    body = new.element.body
-    for child in list(doc.element.body):
-        if child.tag == qn("w:sectPr"):
-            continue
-        body.append(child)
-    # Финальный sectPr из pandoc.
-    src_sect = doc.element.body.find(qn("w:sectPr"))
-    if src_sect is not None:
-        body.append(src_sect)
+    add_title_page(doc)
+    doc.add_section(WD_SECTION.NEW_PAGE)
+    add_toc(doc)
+    doc.add_section(WD_SECTION.NEW_PAGE)
+    for child in children:
+        final_sect.addprevious(child)
 
-    style_document(new)
+    style_document(doc)
     # Нумерация страниц только в основной секции (последней).
-    if len(new.sections) >= 1:
-        add_page_number_footer(new.sections[-1])
-    new.save(OUT)
+    if len(doc.sections) >= 1:
+        add_page_number_footer(doc.sections[-1])
+    # Просим Word обновить поле оглавления при открытии.
+    settings = doc.settings.element
+    update = OxmlElement("w:updateFields")
+    update.set(qn("w:val"), "true")
+    settings.append(update)
+    doc.save(OUT)
     print(f"готово: {OUT}")
 
 

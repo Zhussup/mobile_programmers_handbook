@@ -120,6 +120,9 @@ def parse_caption(text):
     kind = "fig" if m.group("kind").lower().startswith("рисун") else "tab"
     title = (m.group("title") or "").strip()
     title = title.rstrip(".").strip()
+    # «Таблица 2.5 — Таблица users» → «Таблица 2.5. users», чтобы слово
+    # «Таблица» не дублировалось в подписи.
+    title = re.sub(r"^Таблица\s+", "", title, flags=re.I).strip()
     return {
         "kind": kind,
         "ch": int(m.group("ch")),
@@ -781,6 +784,31 @@ def main():
         report["references"] = replace_references(
             ref_paragraphs, tab_maps, fig_maps
         )
+
+    # --- какие рисунки/таблицы упомянуты в основном тексте ---
+    referenced = {"fig": set(), "tab": set()}
+    range_re = re.compile(
+        r"(?P<kind>рисун\w*|таблиц\w*)\s+(?P<a>\d+)\.(?P<b>\d+)"
+        r"\s*[–—]\s*(?P<c>\d+)\.(?P<d>\d+)",
+        re.I,
+    )
+    for p in body_paragraphs:
+        text = p.text
+        if parse_caption(text) or is_continuation(text):
+            continue
+        for m in REF_RE.finditer(text):
+            kind = "fig" if m.group("kind").lower().startswith("рисун") else "tab"
+            referenced[kind].add(f"{int(m.group('ch'))}.{int(m.group('num'))}")
+        for m in range_re.finditer(text):
+            kind = "fig" if m.group("kind").lower().startswith("рисун") else "tab"
+            ch, a, c = int(m.group("a")), int(m.group("b")), int(m.group("d"))
+            for n in range(a, c + 1):
+                referenced[kind].add(f"{ch}.{n}")
+
+    for item in report["figures"]:
+        item["referenced"] = item["new"] in referenced["fig"]
+    for item in report["tables"]:
+        item["referenced"] = item["new"] in referenced["tab"]
 
     # --- шрифт таблиц ---
     for t in tables:
