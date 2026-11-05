@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="1400" height="800" viewBox="0 0 1400 800"
+     role="img" aria-labelledby="fig-title fig-desc">
+  <title id="fig-title">Структурная схема программного продукта</title>
+  <desc id="fig-desc">Клиент-серверная архитектура: мобильное приложение и админ-панель обращаются к backend по HTTPS с JSON и Bearer-токеном; backend работает с базой данных SQLite по SQL.</desc>
+
+  <defs>
+    <style>
+      .ink { fill: #1b2430; }
+      .muted { fill: #4f5d73; }
+      .box-client { fill: #eef3fb; stroke: #2f4b7c; stroke-width: 2.2; }
+      .box-server { fill: #eaf4ee; stroke: #2e6b4f; stroke-width: 2.2; }
+      .box-db { fill: #f7f1e6; stroke: #7a5a2e; stroke-width: 2.2; }
+      .inner { fill: #ffffff; stroke: #c3cee0; stroke-width: 1.3; }
+      .inner-server { fill: #ffffff; stroke: #b9d3c4; stroke-width: 1.3; }
+      .divider { stroke: #c3cee0; stroke-width: 1.3; }
+      .title { font-family: "Times New Roman", "Liberation Serif", "DejaVu Serif", serif; font-size: 30px; font-weight: 700; }
+      .subtitle { font-family: "Times New Roman", "Liberation Serif", "DejaVu Serif", serif; font-size: 20px; }
+      .item { font-family: "Times New Roman", "Liberation Serif", "DejaVu Serif", serif; font-size: 22px; }
+      .module-title { font-family: "Times New Roman", "Liberation Serif", "DejaVu Serif", serif; font-size: 24px; font-weight: 700; }
+      .module-note { font-family: "Times New Roman", "Liberation Serif", "DejaVu Serif", serif; font-size: 20px; }
+      .db-item { font-family: "Times New Roman", "Liberation Serif", "DejaVu Serif", serif; font-size: 21px; }
+      .proto { font-family: "Times New Roman", "Liberation Serif", "DejaVu Serif", serif; font-size: 22px; font-weight: 700; }
+      .proto-small { font-family: "Times New Roman", "Liberation Serif", "DejaVu Serif", serif; font-size: 21px; font-weight: 700; }
+      .legend { font-family: "Times New Roman", "Liberation Serif", "DejaVu Serif", serif; font-size: 19px; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1400" height="800" fill="#ffffff"/>
+
+  <!-- Мобильное приложение -->
+  <rect class="box-client" x="20" y="60" width="330" height="250" rx="12"/>
+  <text class="title ink" x="185" y="100" text-anchor="middle">Мобильное приложение</text>
+  <text class="subtitle muted" x="185" y="128" text-anchor="middle">Flutter · Provider · go_router</text>
+  <line class="divider" x1="40" y1="142" x2="330" y2="142"/>
+  <rect class="inner" x="40" y="154" width="290" height="32" rx="6"/>
+  <text class="item ink" x="52" y="176">Экраны и навигация</text>
+  <rect class="inner" x="40" y="192" width="290" height="32" rx="6"/>
+  <text class="item ink" x="52" y="214">Провайдеры состояния</text>
+  <rect class="inner" x="40" y="230" width="290" height="32" rx="6"/>
+  <text class="item ink" x="52" y="252">API-клиент (HTTP/JSON)</text>
+  <rect class="inner" x="40" y="268" width="290" height="32" rx="6"/>
+  <text class="item ink" x="52" y="290">Кэш: sqflite, prefs</text>
+
+  <!-- Админ-панель -->
+  <rect class="box-client" x="20" y="480" width="330" height="250" rx="12"/>
+  <text class="title ink" x="185" y="520" text-anchor="middle">Админ-панель (Web)</text>
+  <text class="subtitle muted" x="185" y="548" text-anchor="middle">Flutter Web · Provider · http</text>
+  <line class="divider" x1="40" y1="562" x2="330" y2="562"/>
+  <rect class="inner" x="40" y="574" width="290" height="32" rx="6"/>
+  <text class="item ink" x="52" y="596">Вход администратора</text>
+  <rect class="inner" x="40" y="612" width="290" height="32" rx="6"/>
+  <text class="item ink" x="52" y="634">Управление пользователями</text>
+  <rect class="inner" x="40" y="650" width="290" height="32" rx="6"/>
+  <text class="item ink" x="52" y="672">Статьи и категории</text>
+  <rect class="inner" x="40" y="688" width="290" height="32" rx="6"/>
+  <text class="item ink" x="52" y="710">Публикация / снятие</text>
+
+  <!-- Backend -->
+  <rect class="box-server" x="650" y="50" width="330" height="690" rx="12"/>
+  <text class="title ink" x="815" y="92" text-anchor="middle">Backend (Dart, shelf)</text>
+  <text class="subtitle muted" x="815" y="122" text-anchor="middle">REST API · порт 8080</text>
+  <line class="divider" x1="670" y1="136" x2="960" y2="136"/>
+
+  <rect class="inner-server" x="670" y="150" width="290" height="100" rx="7"/>
+  <text class="module-title ink" x="686" y="186">Маршрутизация</text>
+  <text class="module-note muted" x="686" y="216">путь и метод запроса</text>
+
+  <rect class="inner-server" x="670" y="265" width="290" height="100" rx="7"/>
+  <text class="module-title ink" x="686" y="301">Аутентификация и роли</text>
+  <text class="module-note muted" x="686" y="331">Bearer-токен, admin/user</text>
+
+  <rect class="inner-server" x="670" y="380" width="290" height="100" rx="7"/>
+  <text class="module-title ink" x="686" y="416">Валидация и ошибки</text>
+  <text class="module-note muted" x="686" y="446">JSON data / error</text>
+
+  <rect class="inner-server" x="670" y="495" width="290" height="100" rx="7"/>
+  <text class="module-title ink" x="686" y="531">Доступ к данным</text>
+  <text class="module-note muted" x="686" y="561">SQL-запросы к SQLite</text>
+
+  <rect x="670" y="610" width="290" height="110" rx="7" fill="#f7fbf8" stroke="#b9d3c4" stroke-width="1.3" stroke-dasharray="7 5"/>
+  <text class="module-title ink" x="686" y="642">Единая точка доступа</text>
+  <text class="module-note muted" x="686" y="670">клиенты не обращаются к БД</text>
+  <text class="module-note muted" x="686" y="696">CORS для админ-панели</text>
+
+  <!-- База данных -->
+  <rect class="box-db" x="1130" y="280" width="240" height="240" rx="12"/>
+  <text class="title ink" x="1250" y="316" text-anchor="middle">База данных</text>
+  <text class="subtitle muted" x="1250" y="344" text-anchor="middle">SQLite · app.db</text>
+  <line class="divider" x1="1148" y1="356" x2="1352" y2="356"/>
+  <text class="db-item ink" x="1250" y="382" text-anchor="middle">users, sessions</text>
+  <text class="db-item ink" x="1250" y="412" text-anchor="middle">categories, articles</text>
+  <text class="db-item ink" x="1250" y="442" text-anchor="middle">favorites, history</text>
+  <text class="db-item ink" x="1250" y="472" text-anchor="middle">snippets</text>
+  <text class="module-note muted" x="1250" y="502" text-anchor="middle">источник истины</text>
+
+  <!-- Поток: мобильное приложение — backend -->
+  <line x1="350" y1="185" x2="630" y2="185" stroke="#2b3445" stroke-width="2.8"/>
+  <polygon points="630,177 650,185 630,193" fill="#2b3445"/>
+  <line x1="640" y1="255" x2="370" y2="255" stroke="#2b3445" stroke-width="2.2" stroke-dasharray="8 6"/>
+  <polygon points="370,247 350,255 370,263" fill="#2b3445"/>
+  <text class="proto ink" x="495" y="165" text-anchor="middle">HTTPS / JSON</text>
+  <text class="proto ink" x="495" y="282" text-anchor="middle">JSON — ответ</text>
+  <rect x="400" y="201" width="190" height="36" rx="18" fill="#fff8e1" stroke="#8a6d1f" stroke-width="1.3"/>
+  <text class="proto-small ink" x="495" y="226" text-anchor="middle">Bearer-токен</text>
+
+  <!-- Поток: админ-панель — backend -->
+  <line x1="350" y1="605" x2="630" y2="605" stroke="#2b3445" stroke-width="2.8"/>
+  <polygon points="630,597 650,605 630,613" fill="#2b3445"/>
+  <line x1="640" y1="675" x2="370" y2="675" stroke="#2b3445" stroke-width="2.2" stroke-dasharray="8 6"/>
+  <polygon points="370,667 350,675 370,683" fill="#2b3445"/>
+  <text class="proto ink" x="495" y="585" text-anchor="middle">HTTPS / JSON</text>
+  <text class="proto ink" x="495" y="702" text-anchor="middle">JSON — ответ</text>
+  <rect x="400" y="621" width="190" height="36" rx="18" fill="#fff8e1" stroke="#8a6d1f" stroke-width="1.3"/>
+  <text class="proto-small ink" x="495" y="646" text-anchor="middle">Bearer-токен</text>
+
+  <!-- Поток: backend — база данных -->
+  <line x1="980" y1="360" x2="1110" y2="360" stroke="#2b3445" stroke-width="2.8"/>
+  <polygon points="1110,352 1130,360 1110,368" fill="#2b3445"/>
+  <line x1="1120" y1="440" x2="1000" y2="440" stroke="#2b3445" stroke-width="2.2" stroke-dasharray="8 6"/>
+  <polygon points="1000,432 980,440 1000,448" fill="#2b3445"/>
+  <text class="proto ink" x="1055" y="342" text-anchor="middle">SQL-запросы</text>
+  <text class="proto ink" x="1055" y="465" text-anchor="middle">результаты</text>
+
+  <!-- Легенда -->
+  <line x1="60" y1="770" x2="100" y2="770" stroke="#2b3445" stroke-width="2.8"/>
+  <polygon points="100,762 120,770 100,778" fill="#2b3445"/>
+  <text class="legend ink" x="130" y="776">запрос</text>
+  <line x1="260" y1="770" x2="300" y2="770" stroke="#2b3445" stroke-width="2.2" stroke-dasharray="8 6"/>
+  <polygon points="300,762 320,770 300,778" fill="#2b3445"/>
+  <text class="legend ink" x="330" y="776">ответ</text>
+  <text class="legend muted" x="500" y="776">Все обмены клиентов с backend — HTTPS/JSON; доступ к БД — только через backend.</text>
+</svg>

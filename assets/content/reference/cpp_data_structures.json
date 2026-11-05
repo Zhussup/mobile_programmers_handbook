@@ -1,0 +1,361 @@
+{
+  "category": {
+    "id": "data_structures",
+    "title": "Структуры данных",
+    "icon": "layers",
+    "description": "Способы хранения данных: массивы, строки, вектор, собственные структуры, указатели и ссылки."
+  },
+  "articles": [
+    {
+      "id": "cpp_ds_array",
+      "title": "Массивы",
+      "summary": "Набор элементов одного типа под одним именем: объявление, инициализация, обход и выход за границы.",
+      "difficulty": "beginner",
+      "tags": [
+        "cpp",
+        "массивы",
+        "основы",
+        "индексы"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Массив — набор элементов одного типа, лежащих в памяти подряд и доступных по индексу с нуля. Размер известен при объявлении и не меняется компилируемой программе. Индекс от 0 до размера минус один; выход за границу — не ошибка компиляции, а неопределённое поведение."
+        },
+        {
+          "type": "heading",
+          "text": "Инициализация"
+        },
+        {
+          "type": "list",
+          "items": [
+            "int arr[4]; — значения не определены (мусор)",
+            "int arr[4] = {10, 20, 30, 40}; — полное заполнение",
+            "int arr[4] = {1, 2}; — недостающие элементы получают 0",
+            "int arr[] = {1, 2, 3}; — размер выводится по списку значений",
+            "Число элементов: sizeof(arr) / sizeof(arr[0])"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n\nint main() {\n    int arr[] = {10, 20, 30, 40};\n    int size = sizeof(arr) / sizeof(arr[0]);\n    int sum = 0;\n\n    for (int i = 0; i < size; i++) {\n        arr[i] = arr[i] * 2;\n        sum += arr[i];\n    }\n    std::cout << sum << std::endl;\n    std::cout << arr[0] << ' ' << arr[3] << std::endl;\n    return 0;\n}",
+          "output": "200\n20 80",
+          "caption": "Обход с изменением: индексы от 0 до size - 1, число элементов через sizeof"
+        },
+        {
+          "type": "note",
+          "text": "sizeof(arr) работает только с массивом, видимым в этой области: для параметра-массива функции он вернёт размер указателя. Массиву нужен размер на этапе компиляции — для изменяемого размера используйте std::vector."
+        }
+      ]
+    },
+    {
+      "id": "cpp_ds_string",
+      "title": "Строки: std::string",
+      "summary": "Текстовый тип стандартной библиотеки: длина, индексация, конкатенация, поиск подстроки и сравнение.",
+      "difficulty": "beginner",
+      "tags": [
+        "cpp",
+        "строки",
+        "основы",
+        "текст"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "std::string — строковый тип стандартной библиотеки: сам управляет памятью и растёт по мере надобности. Операции пишутся «как у чисел»: + склеивает строки, [] обращается к символу, == и < сравнивают посимвольно."
+        },
+        {
+          "type": "heading",
+          "text": "Частые операции"
+        },
+        {
+          "type": "list",
+          "items": [
+            "s.size() или s.length() — длина строки",
+            "s[i] — символ по индексу с нуля; s.back() — последний символ",
+            "s1 + s2 и s += \"...\" — конкатенация и добавление в конец",
+            "s.find(\"подстрока\") — индекс первого вхождения или special-значение npos",
+            "s.substr(start, len) — подстрока; s.empty() — проверка на пустоту"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <string>\n\nint main() {\n    std::string first = \"Hello\";\n    std::string second = \"World\";\n    std::string phrase = first + \" \" + second;\n\n    std::cout << phrase << std::endl;\n    std::cout << phrase.size() << std::endl;\n    std::cout << phrase[0] << phrase[10] << std::endl;\n\n    int pos = phrase.find(\"World\");\n    std::cout << pos << ' ' << phrase.substr(0, 5) << std::endl;\n    return 0;\n}",
+          "output": "Hello World\n11\nHd\n6 Hello",
+          "caption": "Конкатенация +, длина size(), первый и последний символы, поиск find"
+        },
+        {
+          "type": "note",
+          "text": "Сравнение строк — лексикографическое («как в словаре»), причём в ASCII заглавные буквы идут раньше строчных: \"Z\" < \"a\". Символ строки может быть любым байтом, поэтому с кириллицей и длиной строки в байтах нужно быть внимательным."
+        }
+      ]
+    },
+    {
+      "id": "cpp_ds_vector",
+      "title": "std::vector",
+      "summary": "Динамический массив из STL: рост при вставке, базовые методы, перебор в диапазонном цикле for.",
+      "difficulty": "intermediate",
+      "tags": [
+        "cpp",
+        "stl",
+        "контейнеры",
+        "динамический массив"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "std::vector из <vector> — массив, который сам увеличивается при добавлении элементов. Элементы хранятся подряд, доступ по индексу с нуля стоит O(1); вставка в конец в среднем тоже O(1). Это контейнер по умолчанию для хранения списков данных в C++."
+        },
+        {
+          "type": "heading",
+          "text": "Базовые методы"
+        },
+        {
+          "type": "list",
+          "items": [
+            "std::vector<int> v = {3, 1, 4}; — создание со списком значений",
+            "v.push_back(x) — добавить элемент в конец",
+            "v.size() — текущий размер; v.empty() — проверка на пустоту",
+            "v.pop_back() — удалить последний элемент",
+            "v[i] — доступ по индексу (границ не проверяет); v.front() и v.back() — первый и последний"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <vector>\n\nint main() {\n    std::vector<int> v = {5, 10, 15};\n    v.push_back(20);\n    v.push_back(25);\n\n    int sum = 0;\n    for (int value : v) {\n        sum += value;\n    }\n    std::cout << \"size: \" << v.size() << std::endl;\n    std::cout << \"sum: \" << sum << std::endl;\n\n    v.pop_back();\n    std::cout << \"first: \" << v.front() << \" last: \" << v.back() << std::endl;\n    return 0;\n}",
+          "output": "size: 5\nsum: 75\nfirst: 5 last: 20",
+          "caption": "push_back растит вектор, pop_back убирает последний, диапазонный for обходит без индексов"
+        },
+        {
+          "type": "note",
+          "text": "v.size() возвращает беззнаковый тип size_t, поэтому i < v.size() - 1 при пустом векторе переполнится: пустоту проверяйте empty(). Индексация v[i] границы не контролирует — для проверки используйте v.at(i), она генерирует исключение при выходе за границы."
+        }
+      ]
+    },
+    {
+      "id": "cpp_ds_struct",
+      "title": "struct: свои типы данных",
+      "summary": "Пользовательский тип данных: разнотипные поля в одной записи, доступ через точку, сочетание с vector.",
+      "difficulty": "intermediate",
+      "tags": [
+        "cpp",
+        "свои типы",
+        "структуры",
+        "записи"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "struct собирает разнотипные поля в один новый тип: «студент» = имя + курс + средний балл. Объявление создаёт тип, а не переменную; переменные объявляются как обычно: Student s; Доступ к полям — через точку. struct в C++ может иметь и методы, но простейшие записи без них."
+        },
+        {
+          "type": "heading",
+          "text": "Объявление и использование"
+        },
+        {
+          "type": "list",
+          "items": [
+            "struct Student { ... }; — объявление типа; точка с запятой в конце обязательна",
+            "Student s = {\"Anna\", 1, 4.5}; — инициализация списком по порядку полей",
+            "s.name, s.grade — чтение и запись полей",
+            "std::vector<Student> — хранение списка записей",
+            "Поля сравниваются по одному: if (a.grade > b.grade)"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <string>\n#include <vector>\n\nstruct Student {\n    std::string name;\n    int course;\n    double grade;\n};\n\nint main() {\n    std::vector<Student> group = {\n        {\"Anna\", 1, 4.5},\n        {\"Boris\", 1, 3.8}\n    };\n\n    Student best = group[0];\n    if (group[1].grade > best.grade) {\n        best = group[1];\n    }\n    std::cout << \"Best: \" << best.name << std::endl;\n\n    double sum = group[0].grade + group[1].grade;\n    std::cout << \"Avg: \" << sum / group.size() << std::endl;\n    return 0;\n}",
+          "output": "Best: Anna\nAvg: 4.15",
+          "caption": "struct внутри vector: сравнение записей по полю grade вместо параллельных массивов"
+        },
+        {
+          "type": "note",
+          "text": "sizeof(Student) может быть больше суммы размеров полей — компилятор выравнивает данные в памяти. Для сравнения двух структур целиком в modern C++ доступно == (с C++20), иначе сравнивайте поля вручную."
+        }
+      ]
+    },
+    {
+      "id": "cpp_ds_pointers_references",
+      "title": "Указатели и ссылки",
+      "summary": "Работа с памятью: указатель как адрес переменной, разыменование, ссылки и передача аргументов по ссылке.",
+      "difficulty": "advanced",
+      "tags": [
+        "cpp",
+        "указатели",
+        "ссылки",
+        "память"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Указатель хранит адрес другой переменной в памяти; ссылка — постоянное «второе имя» той же переменной. Оба нужны, чтобы не копировать большие объекты и чтобы функция могла менять аргумент. Ссылка не бывает пустой и не переприсваивается другому объекту; указатель может быть нулевым (nullptr)."
+        },
+        {
+          "type": "heading",
+          "text": "Синтаксис"
+        },
+        {
+          "type": "list",
+          "items": [
+            "int* p = &x; — указатель p на адрес переменной x (& берёт адрес)",
+            "*p — разыменование: значение, лежащее по адресу",
+            "int& r = x; — ссылка r на x (второе имя без копии)",
+            "p = nullptr; — допустимое «ни на что не указывает» для указателя",
+            "void f(int& x) — параметр-ссылка меняет аргумент вызывающего кода"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n\nvoid swap(int& a, int& b) {\n    int tmp = a;\n    a = b;\n    b = tmp;\n}\n\nint main() {\n    double x = 3.14;\n    double* p = &x;\n    double& r = x;\n    r = 2.71;\n    std::cout << x << ' ' << *p << std::endl;\n\n    int a = 1, b = 2;\n    swap(a, b);\n    std::cout << a << ' ' << b << std::endl;\n    return 0;\n}",
+          "output": "2.71 2.71\n2 1",
+          "caption": "Ссылка r меняет x (тот же объект), а swap меняет аргументы по ссылке"
+        },
+        {
+          "type": "note",
+          "text": "Разыменовывать нулевой указатель (*p при p == nullptr) нельзя — это аварийное завершение. Правило текущего стиля: там, где «ничего не указано» не бывает, берите ссылки; указатели оставляйте для опциональных данных и внутренних структур (списки, деревья)."
+        }
+      ]
+    },
+    {
+      "id": "cpp_ds_pair_tuple",
+      "title": "Пара: std::pair и std::tuple",
+      "summary": "Два-три значения одним объектом: pair с first/second, tuple и get, возврат пары из функции и structured bindings (C++17).",
+      "difficulty": "intermediate",
+      "tags": [
+        "cpp",
+        "пара",
+        "tuple",
+        "utility"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "std::pair из <utility> кладёт два значения в один объект — поля first и second. Нужен, когда единственным объектом описывается связанное: частное и остаток, ключ и значение, имя и число. std::vector<pair<...>> — вместо параллельных массивов. std::tuple из <tuple> — та же идея на произвольное число значений; элементы достаются по номеру std::get<N>."
+        },
+        {
+          "type": "heading",
+          "text": "Синтаксис"
+        },
+        {
+          "type": "list",
+          "items": [
+            "std::pair<std::string, int> p = {\"Bread\", 42}; — создание",
+            "p.first, p.second — доступ к элементам",
+            "std::make_pair(7, \"days\") — конструктор с выводом типов по аргументам",
+            "std::tuple<std::string, int, double> t = {...}; std::get<0>(t) — третий+ элемент по номеру",
+            "auto [q, r] = pair — structured bindings (C++17): два имени вместо first/second"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <string>\n#include <tuple>\n#include <utility>\n#include <vector>\n\nint main() {\n    std::pair<std::string, int> item = {\"Bread\", 42};\n    std::cout << item.first << ' ' << item.second << std::endl;\n\n    std::vector<std::pair<std::string, int>> stock = {\n        {\"Bread\", 42},\n        {\"Milk\", 60}\n    };\n    for (const auto& p : stock) {\n        std::cout << p.first << \": \" << p.second << std::endl;\n    }\n\n    std::tuple<std::string, int, double> record = {\"Anna\", 1, 4.5};\n    std::cout << std::get<0>(record) << ' '\n              << std::get<1>(record) << ' '\n              << std::get<2>(record) << std::endl;\n    return 0;\n}",
+          "output": "Bread 42\nBread: 42\nMilk: 60\nAnna 1 4.5",
+          "caption": "pair хранит два значения, tuple — сколько угодно; get<N> обращается по порядку, нумерация с нуля"
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <string>\n#include <utility>\n\n// Two results out of one function: no out-parameters needed\nstd::pair<int, int> quotientRemainder(int a, int b) {\n    return {a / b, a % b};\n}\n\nint main() {\n    auto [q, r] = quotientRemainder(17, 5);\n    std::cout << \"17 / 5: \" << q << \" and \" << r << std::endl;\n\n    std::pair<std::string, int> person = {\"Alex\", 19};\n    const auto& [name, age] = person;\n    std::cout << name << \" is \" << age << std::endl;\n    return 0;\n}",
+          "output": "17 / 5: 3 and 2\nAlex is 19",
+          "caption": "Пара как возвращаемое значение и structured bindings вместо p.first / p.second"
+        },
+        {
+          "type": "note",
+          "text": "Пары сравниваются поэлементно: сначала first, при равенстве — second. Поэтому sort по vector<pair> упорядочивает по первому элементу, а при равных первых — по второму: стандартный приём для составных ключей. Structured bindings работают и с массивами и с полями struct (по имени полей)."
+        }
+      ]
+    },
+    {
+      "id": "cpp_ds_matrix",
+      "title": "Двумерные массивы",
+      "summary": "Таблица значений: два индекса (строка/колонка), вложенные циклы, сумма по строкам и размеры через sizeof.",
+      "difficulty": "beginner",
+      "tags": [
+        "cpp",
+        "массивы",
+        "матрица",
+        "вложенные циклы"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Двумерный массив — таблица: первый индекс выбирает строку, второй — колонку. В памяти элементы лежат построчно: за всей первой строкой идёт вторая. Обрабатывают такие данные вложенными циклами: внешний идёт по строкам, внутренний — по колонкам в каждой строке."
+        },
+        {
+          "type": "heading",
+          "text": "Размеры и обход"
+        },
+        {
+          "type": "list",
+          "items": [
+            "int table[2][3]; — 2 строки по 3 элемента; число колонок задавать обязательно",
+            "table[i][j] — элемент на пересечении строки i и колонки j",
+            "Инициализация списком списков задаёт все значения разом",
+            "Строк: sizeof(table) / sizeof(table[0]); колонок: sizeof(table[0]) / sizeof(table[0][0])",
+            "Границы те же: индексы от 0, до «размер - 1»"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n\nint main() {\n    int table[2][3] = {\n        {1, 2, 3},\n        {4, 5, 6}\n    };\n\n    int rows = sizeof(table) / sizeof(table[0]);\n    int cols = sizeof(table[0]) / sizeof(table[0][0]);\n    int total = 0;\n\n    for (int i = 0; i < rows; i++) {\n        int rowSum = 0;\n        for (int j = 0; j < cols; j++) {\n            rowSum += table[i][j];\n        }\n        total += rowSum;\n        std::cout << \"Row \" << i << \": \" << rowSum << std::endl;\n    }\n    std::cout << \"Total: \" << total << std::endl;\n    return 0;\n}",
+          "output": "Row 0: 6\nRow 1: 15\nTotal: 21",
+          "caption": "Суммы по строкам: внешний цикл — строка, внутренний — колонки строки"
+        },
+        {
+          "type": "note",
+          "text": "В параметре функции писать число колонок обязательно: void show(int table[][3]) — иначе компилятор не сумеет вычислить адрес элемента. Для таблиц, растущих в рантайме, берите std::vector<std::vector<int>> — внутренние размеры не обязаны совпадать (рваная таблица)."
+        }
+      ]
+    },
+    {
+      "id": "cpp_ds_stack_queue",
+      "title": "Стек и очередь",
+      "summary": "Две дисциплины доступа: LIFO у стека и FIFO у очереди, push/pop/top/front и типовые применения.",
+      "difficulty": "intermediate",
+      "tags": [
+        "cpp",
+        "стек",
+        "очередь",
+        "структуры данных"
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Стек работает «последним пришёл — первым вышел» (LIFO): как стопка тарелок, кладём и снимаем сверху. Очередь — «первым пришёл — первым ушёл» (FIFO) — как живая очередь. Эти структуры не сортируют и не ищут: они задают только ПОРЯДОК извлечения. В STL это std::stack и std::queue — адаптеры над deque (об адаптере в STL — отдельная статья)."
+        },
+        {
+          "type": "heading",
+          "text": "Основные операции"
+        },
+        {
+          "type": "list",
+          "items": [
+            "s.push(x) / q.push(x) — положить элемент",
+            "s.top() и s.pop() — посмотреть верхушку и убрать её (два разных вызова)",
+            "q.front() и q.back() — первый и последний элемент очереди",
+            "empty() и size() — признаки границ: цикл while (!s.empty())",
+            "Применения: стек — отмена действий и проверка скобок; очередь — очередь печати и обход в ширину"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <queue>\n#include <stack>\n#include <string>\n\nint main() {\n    std::stack<int> s;\n    s.push(1);\n    s.push(2);\n    s.push(3);\n\n    std::cout << \"stack pops:\";\n    while (!s.empty()) {\n        std::cout << ' ' << s.top();\n        s.pop();\n    }\n    std::cout << std::endl;\n\n    std::queue<std::string> q;\n    q.push(\"first\");\n    q.push(\"second\");\n    q.push(\"third\");\n\n    std::cout << \"queue pops:\";\n    while (!q.empty()) {\n        std::cout << ' ' << q.front();\n        q.pop();\n    }\n    std::cout << std::endl;\n    return 0;\n}",
+          "output": "stack pops: 3 2 1\nqueue pops: first second third",
+          "caption": "Стек отдаёт элементы в обратном порядке (последний первым), очередь — в порядке вставки"
+        },
+        {
+          "type": "note",
+          "text": "pop() не возвращает значение — сначала top()/front(), потом pop(), иначе последний элемент уйдёт не прочитанным. Проверка скобок стеком: открывающая — push, закрывающая — сверить с top и pop; к концу текста стек должен опустеть."
+        }
+      ]
+    }
+  ]
+}

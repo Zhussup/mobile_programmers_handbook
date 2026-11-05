@@ -1,0 +1,149 @@
+import 'package:flutter/foundation.dart';
+
+import '../../../core/constants/app_constants.dart';
+import '../auth/session_provider.dart';
+import 'article_model.dart';
+import 'history_data_source.dart';
+import 'reference_content_repository.dart';
+import 'user_scoped_provider.dart';
+
+/// Модель «Недавно смотрели» (home) и экрана истории: статья + время.
+@immutable
+class HistoryEntry {
+  const HistoryEntry({required this.article, required this.viewedAt});
+
+  /// Статья (сшита с JSON-контентом по articleId).
+  final Article article;
+
+  /// Когда статья открыта.
+  final DateTime viewedAt;
+}
+
+/// Провайдер истории просмотров (P9): «недавно смотрели» на home, экран
+/// `/history` с кнопкой «Очистить».
+///
+/// user-scoped: подписан на [SessionProvider] — смена пользователя → полная
+/// перезагрузка, гость → пустое состояние (данные в БД лежат под своим
+/// user_id, чужие не видны).
+class HistoryProvider extends UserScopedProvider {
+  /// Провайдер над двумя репозиториями: SQLite-история + JSON-контент.
+  HistoryProvider({
+    required this.articles,
+    required this.repository,
+    required SessionProvider session,
+  }) : super(session);
+
+  /// Репозиторий контента (join истории со статьями).
+  final ReferenceContentRepository articles;
+
+  /// Репозиторий истории (SQLite).
+  final HistoryDataSource repository;
+
+  /// Топ просмотренных статей (свежие раньше; репозиторий уже отсортировал
+  /// и подрезал до топ-20 — JOIN с контентом только отсюда).
+  List<HistoryEntry> _entries = const [];
+  bool _loading = true;
+  bool _offline = false;
+
+  /// Загружается ли сейчас список (первая загрузка).
+  bool get loading => _loading;
+
+  /// Данные отданы из кэша из-за сетевой ошибки.
+  bool get offline => _offline;
+
+  /// Топ-20 просмотров пользователя (свежие раньше).
+  List<HistoryEntry> get entries => List.unmodifiable(_entries);
+
+  /// Первые [count] записей — секция «Продолжить» на home.
+  List<HistoryEntry> recent({int count = 5}) => _entries.take(count).toList();
+
+  @override
+  Future<void> loadForUser(int? userId, int token) async {
+    if (userId == null) {
+      // Гость: состояние пустое (данные прошлого пользователя не видны).
+      _entries = const [];
+      _loading = false;
+      return;
+    }
+    _loading = true;
+    try {
+      final records = await repository.listTop(userId);
+      if (!isActual(token)) return; // пользователь сменился за время запроса
+      _offline = repository.servedFromCache;
+      _entries = records
+          .where((record) => articles.articleById(record.articleId) != null)
+          .map(
+            (record) => HistoryEntry(
+              article: articles.articleById(record.articleId)!,
+              viewedAt: record.viewedAt,
+            ),
+          )
+          .toList();
+    } on Exception {
+      if (!isActual(token)) return;
+      // Сбой БД не роняет приложение: пустое состояние.
+      _entries = const [];
+    } finally {
+      _loading = false;
+    }
+  }
+
+  /// Запись просмотра статьи (статья ОДИН раз на появление экрана — см.
+  /// ArticleScreen; сам репозиторий держит не больше строки на статью и
+  /// подрезает топ-20).
+  ///
+  /// Ошибка БД НЕ пробрасывается (история не критична для чтения статьи),
+  /// только debug-лог.
+  Future<void> record(String articleId) async {
+    final userId = currentUserId;
+    if (userId == null) return; // гость
+    final token = beginLoad();
+    try {
+      await repository.record(userId, articleId);
+      if (!isActual(token)) return;
+      _applyLocalRecord(articleId);
+      // «Продолжить»/история перерисовываются по факту записи (вызов после
+      // await — не во время build).
+      notifyDataChanged();
+    } catch (e) {
+      // Ловим любые ошибки (в т.ч. StateError закрытой БД из отложенной
+      // операции): история не критична для чтения статьи — только лог.
+      debugPrint('История: запись не удалась ($e)');
+    }
+  }
+
+  /// Локальное обновление топа без перечитывания БД: статья переносится
+  /// в начало, хвост сверх топ-20 отбрасывается.
+  void _applyLocalRecord(String articleId) {
+    final article = articles.articleById(articleId);
+    if (article == null) return;
+    final entry = HistoryEntry(article: article, viewedAt: DateTime.now());
+    final others = _entries.where((e) => e.article.id != articleId).toList();
+    _entries = [entry, ...others].take(AppConstants.historyLimit).toList();
+  }
+
+  /// Очистка истории текущего пользователя (кнопка «Очистить»).
+  ///
+  /// Ошибка БД ПРОБРАСЫВАЕТСЯ как Exception, но не роняет приложение:
+  /// экран показывает красный снекбар («Не удалось очистить историю») вместо
+  /// ложного «История очищена» — фидбек обязан отражать реальный результат
+  /// операции (подводный камень №6 из плана).
+  Future<void> clear() async {
+    final userId = currentUserId;
+    if (userId == null) return;
+    final token = beginLoad();
+    try {
+      await repository.clear(userId);
+    } catch (e, stackTrace) {
+      // Ловим любые ошибки (в т.ч. StateError закрытой БД — это Error, а не
+      // Exception) и отдаём наружу типом Exception, который экран умеет
+      // гасить в снекбар ошибки.
+      debugPrint('История: очистка не удалась ($e)');
+      debugPrint('$stackTrace');
+      throw Exception('История: очистка не удалась');
+    }
+    if (!isActual(token)) return; // пользователь сменился за время запроса
+    _entries = const [];
+    notifyDataChanged();
+  }
+}

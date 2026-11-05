@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="1400" height="620" viewBox="0 0 1400 620"
+     role="img" aria-labelledby="fig-title fig-desc">
+  <title id="fig-title">Схема работы с локальным кэшем</title>
+  <desc id="fig-desc">Успешный ответ API сохраняется в sqflite и показывается на экране; при сетевой ошибке или таймауте данные читаются из кэша, а экран показывает баннер с возможностью повтора.</desc>
+
+  <defs>
+    <style>
+      .ink { fill: #1b2430; }
+      .muted { fill: #4f5d73; }
+      .box { fill: #eef3fb; stroke: #2f4b7c; stroke-width: 2.2; }
+      .ok { fill: #eaf4ee; stroke: #2e6b4f; stroke-width: 2.2; }
+      .warn { fill: #fdf1e6; stroke: #9a5b1f; stroke-width: 2.2; }
+      .store { fill: #f7f1e6; stroke: #7a5a2e; stroke-width: 2.2; }
+      .item { font-family: "Times New Roman", "Liberation Serif", "DejaVu Serif", serif; font-size: 24px; }
+      .small { font-family: "Times New Roman", "Liberation Serif", "DejaVu Serif", serif; font-size: 20px; }
+      .label { font-family: "Times New Roman", "Liberation Serif", "DejaVu Serif", serif; font-size: 21px; fill: #4f5d73; }
+      .line { stroke: #1b2430; stroke-width: 2.2; fill: none; }
+      .dash { stroke: #9a5b1f; stroke-width: 2.2; fill: none; stroke-dasharray: 8 6; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1400" height="620" fill="#ffffff"/>
+
+  <rect class="box" x="30" y="250" width="250" height="110" rx="10"/>
+  <text class="item ink" x="155" y="296" text-anchor="middle">Запрос данных</text>
+  <text class="small muted" x="155" y="328" text-anchor="middle">ApiClient, таймаут 10 с</text>
+
+  <rect class="ok" x="400" y="70" width="290" height="110" rx="10"/>
+  <text class="item ink" x="545" y="116" text-anchor="middle">Успешный ответ</text>
+  <text class="small muted" x="545" y="148" text-anchor="middle">200, данные в поле data</text>
+
+  <rect class="store" x="810" y="70" width="250" height="110" rx="10"/>
+  <text class="item ink" x="935" y="116" text-anchor="middle">Запись в sqflite</text>
+  <text class="small muted" x="935" y="148" text-anchor="middle">последний ответ API</text>
+
+  <rect class="ok" x="1140" y="70" width="230" height="110" rx="10"/>
+  <text class="item ink" x="1255" y="116" text-anchor="middle">Актуальные</text>
+  <text class="item ink" x="1255" y="146" text-anchor="middle">данные на экране</text>
+
+  <rect class="warn" x="400" y="430" width="290" height="110" rx="10"/>
+  <text class="item ink" x="545" y="476" text-anchor="middle">Нет сети или таймаут</text>
+  <text class="small muted" x="545" y="508" text-anchor="middle">network / timeout</text>
+
+  <rect class="store" x="810" y="430" width="250" height="110" rx="10"/>
+  <text class="item ink" x="935" y="476" text-anchor="middle">Чтение кэша</text>
+  <text class="small muted" x="935" y="508" text-anchor="middle">сохранённые категории</text>
+
+  <rect class="warn" x="1140" y="430" width="230" height="110" rx="10"/>
+  <text class="item ink" x="1255" y="468" text-anchor="middle">Кэш и баннер</text>
+  <text class="small muted" x="1255" y="496" text-anchor="middle">«Нет связи»</text>
+  <text class="small muted" x="1255" y="520" text-anchor="middle">кнопка «Повторить»</text>
+
+  <path class="line" d="M280 285 L340 285 L340 125 L400 125"/>
+  <path class="line" d="M280 325 L340 325 L340 485 L400 485"/>
+  <path class="line" d="M690 125 L810 125"/>
+  <path class="line" d="M1060 125 L1140 125"/>
+  <path class="line" d="M690 485 L810 485"/>
+  <path class="line" d="M1060 485 L1140 485"/>
+  <path class="dash" d="M1255 180 L1255 430"/>
+  <text class="label" x="1268" y="310">повтор запроса</text>
+  <text class="label" x="700" y="112">200</text>
+  <text class="label" x="700" y="472">ошибка</text>
+</svg>

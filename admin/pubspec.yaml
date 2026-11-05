@@ -1,0 +1,24 @@
+name: mob_kurs_admin
+description: "Админ-панель мобильного приложения (Flutter Web, ПМ07)."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.13.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  provider: ^6.1.5
+  go_router: ^14.8.1
+  http: ^1.6.0
+  shared_preferences: ^2.5.6
+  intl: ^0.20.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
